@@ -1,48 +1,68 @@
 // ==========================================
-// 1. GESTIONE NAVIGAZIONE & SALVATAGGI
+// 1. SISTEMA SALVATAGGIO
 // ==========================================
 let scores = JSON.parse(localStorage.getItem('octoPro')) || { snake: { easy:0, med:0, hard:0 }, pong: { easy:0, med:0, hard:0 } };
 function saveScores() { localStorage.setItem('octoPro', JSON.stringify(scores)); }
 
+// ==========================================
+// 2. NAVIGAZIONE (App Premium)
+// ==========================================
 const views = document.querySelectorAll('.view');
-let activeGame = null;
+const navItems = document.querySelectorAll('.nav-item');
+let isSnakeActive = false; 
+let isPongActive = false;
 
-// Apre un gioco
-document.querySelectorAll('.open-game').forEach(btn => {
+// Apre gioco da Home o Navbar
+document.querySelectorAll('.open-game, .nav-item').forEach(btn => {
     btn.addEventListener('click', () => {
         const target = btn.getAttribute('data-target');
-        views.forEach(v => v.classList.remove('active'));
-        document.getElementById(target).classList.add('active');
-        activeGame = target;
         
-        // Forza stop ai canvas quando si apre un nuovo gioco
+        // Spegne tutte le viste e icone nav
+        views.forEach(v => v.classList.remove('active'));
+        navItems.forEach(n => n.classList.remove('active'));
+        
+        // Attiva la vista scelta
+        document.getElementById(target).classList.add('active');
+        
+        // Attiva l'icona della navbar corrispondente (se esiste)
+        const navBtn = document.querySelector(`.nav-item[data-target="${target}"]`);
+        if (navBtn) navBtn.classList.add('active');
+        
+        // Gestione loop dei giochi
         isSnakeActive = (target === 'snake');
         isPongActive = (target === 'pong');
         
-        // Reset rapido se si entra
-        if(target === 'snake') document.getElementById('snake-score').innerText = '0';
+        // Reset visivo punti Snake se si entra
+        if(target === 'snake') {
+            document.getElementById('snake-score').innerText = '0';
+            document.getElementById('snake-high').innerText = scores.snake[document.getElementById('snake-diff').value] || 0;
+        }
     });
 });
 
-// Torna alla Home
+// Tasto "Indietro / Menu"
 document.querySelectorAll('.back-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        isSnakeActive = false; isPongActive = false; // Ferma i loop
+        isSnakeActive = false; 
+        isPongActive = false;
+        
         views.forEach(v => v.classList.remove('active'));
+        navItems.forEach(n => n.classList.remove('active'));
+        
         document.getElementById('home').classList.add('active');
-        activeGame = null;
+        document.querySelector('.nav-item[data-target="home"]').classList.add('active');
     });
 });
 
 // ==========================================
-// 2. POLPO SNAKE (Ostacoli + Difficoltà)
+// 3. POLPO SNAKE (Ostacoli + Difficoltà)
 // ==========================================
-const snakeCanvas = document.getElementById('snakeCanvas'); const sCtx = snakeCanvas.getContext('2d');
+const snakeCanvas = document.getElementById('snakeCanvas'); 
+const sCtx = snakeCanvas.getContext('2d');
 const sDiffSelect = document.getElementById('snake-diff');
 const gridSize = 16; const tileCount = snakeCanvas.width / gridSize; // 320/16 = 20
 let snake = []; let dx = 0; let dy = 0; let foodX, foodY; let rocks = [];
 let snakeScore = 0; let currentDiffS = 'med'; let gameSpeed = 120; let lastRenderTime = 0;
-let isSnakeActive = false;
 
 document.getElementById('start-snake').addEventListener('click', () => {
     currentDiffS = sDiffSelect.value;
@@ -106,15 +126,16 @@ function sDir(ndx, ndy) { if(dx!==0 && ndx!==0) return; if(dy!==0 && ndy!==0) re
     document.getElementById('right').addEventListener(evt, e=>{e.preventDefault(); sDir(1,0);});
 });
 
-
 // ==========================================
-// 3. DYBALA PONG (Fisica Calcio)
+// 4. DYBALA PONG (Fisica Calcio)
 // ==========================================
-const pCanvas = document.getElementById('pongCanvas'); const pCtx = pCanvas.getContext('2d');
+const pCanvas = document.getElementById('pongCanvas'); 
+const pCtx = pCanvas.getContext('2d');
 const pw = 70; const ph = 15; const netW = 120;
 const ball = { x: 160, y: 210, r: 10, dx: 0, dy: 0, speed: 4.5 };
-const dybala = { x: 125, y: 390, score: 0 }; const cpu = { x: 125, y: 15, score: 0 };
-let pongDiff = 'med'; let isPongActive = false;
+const dybala = { x: 125, y: 390, score: 0 }; 
+const cpu = { x: 125, y: 15, score: 0 };
+let pongDiff = 'med'; 
 
 document.getElementById('start-pong').addEventListener('click', () => {
     pongDiff = document.getElementById('pong-diff').value; dybala.score = 0; cpu.score = 0; 
@@ -170,9 +191,8 @@ function drawSoccer() {
     pCtx.font = "18px Arial"; pCtx.fillText('⚽', ball.x-10, ball.y+6);
 }
 
-
 // ==========================================
-// 4. TRIS OCEANICO
+// 5. TRIS OCEANICO
 // ==========================================
 const tCells = document.querySelectorAll('.tris-board .cell'); const tStatus = document.getElementById('tris-status');
 let tBoard = ['', '', '', '', '', '', '', '', '']; let isTrisActive = true; let currentTurn = '🐙';
@@ -193,17 +213,18 @@ tCells.forEach(cell => cell.addEventListener('click', (e) => {
 }));
 document.getElementById('reset-tris').addEventListener('click', () => { tBoard=['','','','','','','','','']; isTrisActive=true; currentTurn='🐙'; tStatus.innerText='Tocca a: 🐙'; tCells.forEach(c=>c.innerText=''); });
 
-
 // ==========================================
-// 5. NAVALE OCEANICA
+// 6. NAVALE OCEANICA
 // ==========================================
 let p1Grid=Array(36).fill(0), p2Grid=Array(36).fill(0), p1Rev=Array(36).fill(false), p2Rev=Array(36).fill(false);
 let nTurn=1, nHits1=0, nHits2=0, nPhase='setup1'; const nShips=[3,2,2]; let cShipIdx=0; let isHoriz=true;
+
 function initNavale() {
     p1Grid.fill(0); p2Grid.fill(0); p1Rev.fill(false); p2Rev.fill(false); nTurn=1; nHits1=0; nHits2=0; nPhase='setup1'; cShipIdx=0;
     document.getElementById('navale-setup').style.display='flex'; document.getElementById('navale-overlay').style.display='none'; drawNavale();
 }
 document.getElementById('btn-rotate').addEventListener('click', () => { isHoriz=!isHoriz; document.getElementById('btn-rotate').innerText=isHoriz?'Gira Nave ➡️':'Gira Nave ⬇️'; });
+
 function drawNavale() {
     const b = document.getElementById('board-navale'); b.innerHTML='';
     let grid = nPhase==='setup1'?p1Grid:(nPhase==='setup2'?p2Grid:(nTurn===1?p2Grid:p1Grid));
@@ -212,7 +233,7 @@ function drawNavale() {
         let div=document.createElement('div'); div.className='cell-navale';
         if(nPhase.includes('setup')) {
             if(grid[i]===1) div.classList.add('ship'); div.addEventListener('click',()=>placeShip(i,grid));
-            document.getElementById('navale-status').innerText=`Giocatore ${nPhase==='setup1'?'1':'2'}: Posiziona`; document.getElementById('ship-len').innerText=nShips[cShipIdx]||0;
+            document.getElementById('navale-status').innerText=`Giocatore ${nPhase==='setup1'?'1':'2'}: Posiziona navi`; document.getElementById('ship-len').innerText=nShips[cShipIdx]||0;
         } else {
             if(rev[i]) { if(grid[i]===1) { div.classList.add('hit'); div.innerText='💥'; } else { div.classList.add('miss'); div.innerText='💧'; } }
             else div.addEventListener('click',()=>shoot(i,grid,rev));
@@ -234,16 +255,17 @@ function placeShip(idx,grid) {
 }
 function shoot(idx,grid,rev) {
     if(rev[idx]) return; rev[idx]=true; drawNavale();
-    if(grid[idx]===1) { nTurn===1?nHits1++:nHits2++; if(nHits1===7||nHits2===7) { document.getElementById('navale-status').innerText=`Vittoria G${nTurn}!`; return; } }
+    if(grid[idx]===1) { nTurn===1?nHits1++:nHits2++; if(nHits1===7||nHits2===7) { document.getElementById('navale-status').innerText=`Vittoria Giocatore ${nTurn}!`; return; } }
     setTimeout(()=>{ nTurn=nTurn===1?2:1; document.getElementById('navale-overlay').style.display='flex'; }, 800);
 }
 document.getElementById('btn-navale-ready').addEventListener('click', ()=>{document.getElementById('navale-overlay').style.display='none'; drawNavale();});
 document.getElementById('reset-navale').addEventListener('click', initNavale); initNavale();
 
 // ==========================================
-// 6. DAMA MARINA (8x8)
+// 7. DAMA MARINA (8x8)
 // ==========================================
 let dGrid=[], turnD=1, selPos=null, p1Pieces=12, p2Pieces=12;
+
 function initDama() {
     dGrid=Array(64).fill(0); turnD=1; selPos=null; p1Pieces=12; p2Pieces=12;
     for(let r=0;r<8;r++) for(let c=0;c<8;c++) if((r+c)%2!==0) { if(r<3) dGrid[r*8+c]=1; else if(r>4) dGrid[r*8+c]=2; }
