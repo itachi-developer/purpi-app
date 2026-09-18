@@ -1,6 +1,6 @@
 {
   "name": "Purpi App",
-  "short_name": "Octopus",
+  "short_name": "Purpi App",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0B101E",
