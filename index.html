@@ -85,10 +85,59 @@
         </div>
     </section>
 
-    <!-- SEZIONI PLACEHOLDER PER LA FASE 2 -->
-    <section id="tris" class="view"><div class="container glass-card"><h2>Tris (In arrivo)</h2></div></section>
-    <section id="navale" class="view"><div class="container glass-card"><h2>Battaglia Navale (In arrivo)</h2></div></section>
-    <section id="dama" class="view"><div class="container glass-card"><h2>Dama (In arrivo)</h2></div></section>
+    <!-- TRIS (Tema Polpo) -->
+    <section id="tris" class="view">
+        <div class="container glass-card game-container">
+            <h2>Tris Oceanico 🐙</h2>
+            <div class="score-badge">Vittorie Polpo: <span id="tris-score-p1">0</span> | Vittorie Granchio: <span id="tris-score-p2">0</span></div>
+            <div class="status-box" id="tris-status">Tocca a: 🐙 Polpo</div>
+            
+            <div class="board tris-board" id="tris-board">
+                <div class="cell" data-index="0"></div><div class="cell" data-index="1"></div><div class="cell" data-index="2"></div>
+                <div class="cell" data-index="3"></div><div class="cell" data-index="4"></div><div class="cell" data-index="5"></div>
+                <div class="cell" data-index="6"></div><div class="cell" data-index="7"></div><div class="cell" data-index="8"></div>
+            </div>
+            <button class="btn btn-start" id="reset-tris">Ricomincia</button>
+        </div>
+    </section>
+
+    <!-- BATTAGLIA NAVALE (Oceanica) -->
+    <section id="navale" class="view">
+        <div class="container glass-card game-container">
+            <h2>Battaglia Sottomarina ⚓</h2>
+            <div class="status-box" id="navale-status">Prepara la flotta!</div>
+            
+            <div id="navale-setup" class="game-options">
+                <p>Tocca un quadretto per posizionare il sottomarino (Lungo <span id="ship-len">3</span>)</p>
+                <button class="btn btn-start" id="btn-rotate" style="background:#ff7b54;">Gira Nave ➡️</button>
+            </div>
+
+            <div style="position:relative; width: 100%; max-width: 320px; margin: 0 auto;">
+                <div id="navale-overlay" class="overlay-cheat">
+                    <h3>Passa il telefono!</h3>
+                    <button class="btn btn-start" id="btn-navale-ready">Sono Pronto</button>
+                </div>
+                
+                <div class="board navale-board" id="board-navale"></div>
+            </div>
+            
+            <button class="btn btn-start" id="reset-navale" style="margin-top:15px; background: #607d8b;">Nuova Partita</button>
+        </div>
+    </section>
+
+    <!-- DAMA MARINA -->
+    <section id="dama" class="view">
+        <div class="container glass-card game-container">
+            <h2>Dama Marina 🏁</h2>
+            <div class="score-badge">Conchiglie: <span id="dama-score-p1">12</span> | Stelle Marine: <span id="dama-score-p2">12</span></div>
+            <div class="status-box" id="dama-status">Tocca alle Conchiglie 🐚</div>
+            
+            <div class="dama-wrapper">
+                <div class="board dama-board" id="dama-board"></div>
+            </div>
+            <button class="btn btn-start" id="reset-dama" style="margin-top:15px; background: #607d8b;">Abbandona e Resetta</button>
+        </div>
+    </section>
 
     <!-- NAVBAR -->
     <nav class="bottom-nav">
