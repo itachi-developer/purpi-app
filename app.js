@@ -285,3 +285,185 @@ function drawSoccerField() {
     pCtx.font = "20px Arial";
     pCtx.fillText('⚽', ball.x - 10, ball.y + 7);
 }
+
+// ==========================================
+// 5. TRIS OCEANICO (Polpo vs Granchio)
+// ==========================================
+const tCells = document.querySelectorAll('.cell');
+const tStatus = document.getElementById('tris-status');
+let tBoard = ['', '', '', '', '', '', '', '', ''];
+let isTrisActive = true; let currentTurn = '🐙';
+const winC = [ [0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6] ];
+let winPolpo = 0, winGranchio = 0;
+
+tCells.forEach(cell => cell.addEventListener('click', (e) => {
+    let idx = e.target.getAttribute('data-index');
+    if (tBoard[idx] !== '' || !isTrisActive) return;
+    tBoard[idx] = currentTurn; e.target.innerText = currentTurn;
+    
+    if (winC.some(c => tBoard[c[0]] && tBoard[c[0]] === tBoard[c[1]] && tBoard[c[0]] === tBoard[c[2]])) {
+        tStatus.innerText = `Ha vinto il ${currentTurn === '🐙' ? 'Polpo!' : 'Granchio!'}`;
+        currentTurn === '🐙' ? winPolpo++ : winGranchio++;
+        document.getElementById('tris-score-p1').innerText = winPolpo;
+        document.getElementById('tris-score-p2').innerText = winGranchio;
+        isTrisActive = false; return;
+    }
+    if (!tBoard.includes('')) { tStatus.innerText = 'Pareggio!'; isTrisActive = false; return; }
+    
+    currentTurn = currentTurn === '🐙' ? '🦀' : '🐙';
+    tStatus.innerText = `Tocca a: ${currentTurn} ${currentTurn === '🐙' ? 'Polpo' : 'Granchio'}`;
+}));
+
+document.getElementById('reset-tris').addEventListener('click', () => {
+    tBoard = ['', '', '', '', '', '', '', '', '']; isTrisActive = true; currentTurn = '🐙';
+    tStatus.innerText = 'Tocca a: 🐙 Polpo'; tCells.forEach(c => c.innerText = '');
+});
+
+// ==========================================
+// 6. BATTAGLIA NAVALE (OCEANICA)
+// ==========================================
+let p1Grid = Array(36).fill(0), p2Grid = Array(36).fill(0);
+let p1Rev = Array(36).fill(false), p2Rev = Array(36).fill(false);
+let nTurn = 1, nHits1 = 0, nHits2 = 0, nPhase = 'setup1';
+const nShips = [3, 2, 2]; let cShipIdx = 0; let isHoriz = true;
+
+const nBoard = document.getElementById('board-navale');
+const nOverlay = document.getElementById('navale-overlay');
+const nStatus = document.getElementById('navale-status');
+
+function initNavale() {
+    p1Grid.fill(0); p2Grid.fill(0); p1Rev.fill(false); p2Rev.fill(false);
+    nTurn = 1; nHits1 = 0; nHits2 = 0; nPhase = 'setup1'; cShipIdx = 0;
+    document.getElementById('navale-setup').style.display = 'block';
+    nOverlay.style.display = 'none'; drawNavale();
+}
+document.getElementById('btn-rotate').addEventListener('click', () => {
+    isHoriz = !isHoriz; document.getElementById('btn-rotate').innerText = isHoriz ? 'Gira Nave ➡️' : 'Gira Nave ⬇️';
+});
+
+function drawNavale() {
+    nBoard.innerHTML = '';
+    let grid = nPhase === 'setup1' ? p1Grid : (nPhase === 'setup2' ? p2Grid : (nTurn === 1 ? p2Grid : p1Grid));
+    let rev = nTurn === 1 ? p2Rev : p1Rev;
+
+    for(let i=0; i<36; i++) {
+        let div = document.createElement('div'); div.className = 'cell-navale';
+        if (nPhase.includes('setup')) {
+            if (grid[i] === 1) div.classList.add('ship');
+            div.addEventListener('click', () => placeShip(i, grid));
+            nStatus.innerText = `Player ${nPhase==='setup1'?'1':'2'}, piazza navi!`;
+            document.getElementById('ship-len').innerText = nShips[cShipIdx] || 0;
+        } else {
+            if (rev[i]) {
+                if (grid[i] === 1) { div.classList.add('hit'); div.innerText = '💥'; } 
+                else { div.classList.add('miss'); div.innerText = '💧'; }
+            } else { div.addEventListener('click', () => shoot(i, grid, rev)); }
+            nStatus.innerText = `Attacca Player ${nTurn}!`;
+        }
+        nBoard.appendChild(div);
+    }
+}
+
+function placeShip(idx, grid) {
+    if(cShipIdx >= nShips.length) return;
+    let len = nShips[cShipIdx]; let r = Math.floor(idx/6), c = idx%6;
+    if(isHoriz && c + len > 6) return; if(!isHoriz && r + len > 6) return;
+    for(let i=0; i<len; i++) if(grid[isHoriz ? idx+i : idx+(i*6)] !== 0) return;
+    for(let i=0; i<len; i++) grid[isHoriz ? idx+i : idx+(i*6)] = 1;
+    cShipIdx++; drawNavale();
+    if(cShipIdx >= nShips.length) {
+        if(nPhase === 'setup1') { nPhase = 'setup2'; cShipIdx = 0; nOverlay.style.display = 'flex'; }
+        else { nPhase = 'battle'; document.getElementById('navale-setup').style.display = 'none'; nTurn = 1; nOverlay.style.display = 'flex'; }
+    }
+}
+
+function shoot(idx, grid, rev) {
+    if(rev[idx]) return; rev[idx] = true; drawNavale();
+    if(grid[idx] === 1) {
+        nTurn === 1 ? nHits1++ : nHits2++;
+        if(nHits1 === 7 || nHits2 === 7) { nStatus.innerText = `Vittoria P${nTurn}!`; return; }
+    }
+    setTimeout(() => { nTurn = nTurn === 1 ? 2 : 1; nOverlay.style.display = 'flex'; }, 800);
+}
+document.getElementById('btn-navale-ready').addEventListener('click', () => { nOverlay.style.display = 'none'; drawNavale(); });
+document.getElementById('reset-navale').addEventListener('click', initNavale);
+initNavale();
+
+// ==========================================
+// 7. DAMA MARINA (Logica di base 8x8)
+// ==========================================
+const dBoard = document.getElementById('dama-board');
+let dGrid = [], turnD = 1; // 1 = Conchiglie (P1), 2 = Stelle Marine (P2)
+let selPos = null; let p1Pieces = 12, p2Pieces = 12;
+
+function initDama() {
+    dGrid = Array(64).fill(0); turnD = 1; selPos = null; p1Pieces = 12; p2Pieces = 12;
+    // P1 = 1 (Conchiglie - Alto), P2 = 2 (Stelle - Basso)
+    for(let r=0; r<8; r++) {
+        for(let c=0; c<8; c++) {
+            if((r+c)%2!==0) {
+                if(r<3) dGrid[r*8+c] = 1;
+                else if(r>4) dGrid[r*8+c] = 2;
+            }
+        }
+    }
+    updateDScore(); drawDama();
+}
+function updateDScore() { document.getElementById('dama-score-p1').innerText = p1Pieces; document.getElementById('dama-score-p2').innerText = p2Pieces; }
+
+function drawDama() {
+    dBoard.innerHTML = '';
+    for(let i=0; i<64; i++) {
+        let div = document.createElement('div');
+        let r = Math.floor(i/8), c = i%8;
+        div.className = `dama-cell ${(r+c)%2===0 ? 'white' : 'black'}`;
+        if(selPos === i) div.classList.add('selected');
+
+        if(dGrid[i] !== 0) {
+            let p = document.createElement('div'); p.className = 'piece';
+            // 1 = Conchiglia, 2 = Stella Marina
+            p.innerText = dGrid[i] === 1 ? '🐚' : '⭐';
+            div.appendChild(p);
+        }
+        
+        div.addEventListener('click', () => handleDamaClick(i));
+        dBoard.appendChild(div);
+    }
+}
+
+function handleDamaClick(idx) {
+    let r = Math.floor(idx/8), c = idx%8;
+    if((r+c)%2===0) return; // Si gioca solo sulle scure
+
+    if (selPos === null) {
+        if(dGrid[idx] === turnD) { selPos = idx; drawDama(); }
+    } else {
+        if (selPos === idx) { selPos = null; drawDama(); return; } // Deseleziona
+        
+        // Calcolo movimento legale (Solo in avanti, in diagonale)
+        let sr = Math.floor(selPos/8), sc = selPos%8;
+        let dr = r - sr, dc = Math.abs(c - sc);
+        let dir = turnD === 1 ? 1 : -1; // P1 scende (+1), P2 sale (-1)
+
+        // Mossa Semplice
+        if (dr === dir && dc === 1 && dGrid[idx] === 0) {
+            dGrid[idx] = turnD; dGrid[selPos] = 0; turnD = turnD === 1 ? 2 : 1; selPos = null;
+        }
+        // Mangiare
+        else if (dr === dir*2 && dc === 2 && dGrid[idx] === 0) {
+            let midC = c > sc ? sc+1 : sc-1;
+            let midIdx = (sr+dir)*8 + midC;
+            if(dGrid[midIdx] !== 0 && dGrid[midIdx] !== turnD) {
+                dGrid[idx] = turnD; dGrid[selPos] = 0; dGrid[midIdx] = 0;
+                turnD === 1 ? p2Pieces-- : p1Pieces--;
+                turnD = turnD === 1 ? 2 : 1; selPos = null;
+            } else { selPos = null; }
+        } else { selPos = null; } // Mossa non valida
+        
+        updateDScore(); drawDama();
+        document.getElementById('dama-status').innerText = `Tocca alle ${turnD === 1 ? 'Conchiglie 🐚' : 'Stelle Marine ⭐'}`;
+        if(p1Pieces===0) alert("Vittoria Stelle Marine!"); if(p2Pieces===0) alert("Vittoria Conchiglie!");
+    }
+}
+document.getElementById('reset-dama').addEventListener('click', initDama);
+initDama();
