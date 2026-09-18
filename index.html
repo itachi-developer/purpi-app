@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Octopus Arcade 🐙</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- HOME -->
+    <section id="home" class="view active">
+        <div class="container glass-card">
+            <h1>Octopus Arcade 🐙</h1>
+            <p class="subtitle">Scegli un gioco, imposta la difficoltà e batti il record!</p>
+            
+            <div class="home-menu">
+                <button class="menu-card" data-target="tris">❌⭕<br>Tris</button>
+                <button class="menu-card" data-target="navale">⚓<br>Navale</button>
+                <button class="menu-card" data-target="snake">🐙<br>Polpo Snake</button>
+                <button class="menu-card" data-target="pong">⚽<br>Dybala Pong</button>
+                <button class="menu-card" data-target="dama" style="grid-column: span 2;">🏁 Dama Marina</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- POLPO SNAKE -->
+    <section id="snake" class="view">
+        <div class="container glass-card game-container">
+            <h2>Polpo Snake 🐙</h2>
+            
+            <!-- OPZIONI DI GIOCO -->
+            <div class="game-options">
+                <label>Difficoltà:</label>
+                <select id="snake-diff">
+                    <option value="easy">Facile (Poche rocce)</option>
+                    <option value="med" selected>Medio (Normale)</option>
+                    <option value="hard">Difficile (Veloce + Tante rocce)</option>
+                </select>
+                <button class="btn btn-start" id="start-snake">Gioca</button>
+            </div>
+
+            <div class="score-badge">Punti: <span id="snake-score">0</span> | Record: <span id="snake-high">0</span></div>
+            
+            <!-- SCHERMO PIU GRANDE (400x400) -->
+            <div class="canvas-wrapper">
+                <canvas id="snakeCanvas" width="400" height="400"></canvas>
+            </div>
+            
+            <div class="d-pad">
+                <button class="glass-btn" id="up"><i class="fa-solid fa-caret-up"></i></button>
+                <div class="middle-row">
+                    <button class="glass-btn" id="left"><i class="fa-solid fa-caret-left"></i></button>
+                    <button class="glass-btn" id="right"><i class="fa-solid fa-caret-right"></i></button>
+                </div>
+                <button class="glass-btn" id="down"><i class="fa-solid fa-caret-down"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- DYBALA PONG (CALCIO) -->
+    <section id="pong" class="view">
+        <div class="container glass-card game-container">
+            <h2>Dybala Pong ⚽</h2>
+            
+            <div class="game-options">
+                <label>Livello Portiere CPU:</label>
+                <select id="pong-diff">
+                    <option value="easy">Principiante</option>
+                    <option value="med" selected>Serie A</option>
+                    <option value="hard">Campione del Mondo</option>
+                </select>
+                <button class="btn btn-start" id="start-pong">Calcio d'inizio</button>
+            </div>
+
+            <div class="score-badge">Dybala: <span id="pong-score-p1">0</span> - Portiere: <span id="pong-score-cpu">0</span></div>
+            
+            <!-- CAMPO DA CALCIO PIU GRANDE (400x500) -->
+            <div class="canvas-wrapper">
+                <canvas id="pongCanvas" width="400" height="500"></canvas>
+            </div>
+            <p class="hint">Tocca il campo e fai scorrere Dybala per parare e tirare!</p>
+        </div>
+    </section>
+
+    <!-- SEZIONI PLACEHOLDER PER LA FASE 2 -->
+    <section id="tris" class="view"><div class="container glass-card"><h2>Tris (In arrivo)</h2></div></section>
+    <section id="navale" class="view"><div class="container glass-card"><h2>Battaglia Navale (In arrivo)</h2></div></section>
+    <section id="dama" class="view"><div class="container glass-card"><h2>Dama (In arrivo)</h2></div></section>
+
+    <!-- NAVBAR -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="home"><i class="fa-solid fa-house"></i></button>
+        <button class="nav-item" data-target="snake"><i class="fa-solid fa-fish"></i></button>
+        <button class="nav-item" data-target="pong"><i class="fa-solid fa-futbol"></i></button>
+        <button class="nav-item" data-target="dama"><i class="fa-solid fa-chess-board"></i></button>
+    </nav>
+
+    <script src="app.js"></script>
+</body>
+</html>
