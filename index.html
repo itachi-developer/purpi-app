@@ -4,202 +4,216 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Octopus Arcade 🐙</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Font eleganti e moderni -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0b132b">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 
-    <!-- HOME -->
+    <!-- HOME DASHBOARD -->
     <section id="home" class="view active">
-        <div class="container">
-            <div class="app-header">
-                <h1>Octopus Arcade 🐙</h1>
-                <p>Seleziona una modalità e inizia la sfida.</p>
+        <div class="home-header">
+            <h1>Octopus Arcade 🐙</h1>
+            <p>Seleziona una sfida e batti il record.</p>
+        </div>
+        
+        <div class="menu-list">
+            <h3 class="section-title">Giocatore Singolo</h3>
+            
+            <div class="app-card" data-target="snake">
+                <div class="app-icon" style="background: linear-gradient(135deg, #00d2ff, #3a7bd5);">🐙</div>
+                <div class="app-info">
+                    <h4>Polpo Snake</h4>
+                    <p>Evita gli scogli oceanici</p>
+                </div>
+                <i class="fa-solid fa-chevron-right arrow"></i>
             </div>
             
-            <!-- GIOCATORE SINGOLO -->
-            <h3 class="category-title"><i class="fa-solid fa-user"></i> Giocatore Singolo</h3>
-            <div class="menu-grid">
-                <button class="menu-card" data-target="snake">
-                    <div class="icon-box" style="background: rgba(0, 210, 255, 0.2); color: #00d2ff;">🐙</div>
-                    <div class="card-text">
-                        <h4>Polpo Snake</h4>
-                        <p>Evita le rocce marine</p>
-                    </div>
-                    <i class="fa-solid fa-chevron-right arrow-icon"></i>
-                </button>
-                
-                <button class="menu-card" data-target="pong">
-                    <div class="icon-box" style="background: rgba(255, 10, 120, 0.2); color: #ff0a78;">⚽</div>
-                    <div class="card-text">
-                        <h4>Dybala Pong</h4>
-                        <p>Fai gol al portiere</p>
-                    </div>
-                    <i class="fa-solid fa-chevron-right arrow-icon"></i>
-                </button>
+            <div class="app-card" data-target="pong">
+                <div class="app-icon" style="background: linear-gradient(135deg, #ff0a78, #ff7b54);">⚽</div>
+                <div class="app-info">
+                    <h4>Dybala Pong</h4>
+                    <p>Fai gol al portiere CPU</p>
+                </div>
+                <i class="fa-solid fa-chevron-right arrow"></i>
             </div>
 
-            <!-- MULTIPLAYER LOCALE -->
-            <h3 class="category-title" style="margin-top: 25px;"><i class="fa-solid fa-users"></i> Multiplayer Locale</h3>
-            <div class="menu-grid">
-                <button class="menu-card" data-target="tris">
-                    <div class="icon-box" style="background: rgba(255, 167, 0, 0.2); color: #ffa700;">❌</div>
-                    <div class="card-text">
-                        <h4>Tris Oceanico</h4>
-                        <p>Polpo vs Granchio</p>
-                    </div>
-                    <i class="fa-solid fa-chevron-right arrow-icon"></i>
-                </button>
-                
-                <button class="menu-card" data-target="navale">
-                    <div class="icon-box" style="background: rgba(76, 175, 80, 0.2); color: #4CAF50;">⚓</div>
-                    <div class="card-text">
-                        <h4>Battaglia Navale</h4>
-                        <p>Affonda la flotta</p>
-                    </div>
-                    <i class="fa-solid fa-chevron-right arrow-icon"></i>
-                </button>
+            <h3 class="section-title" style="margin-top: 25px;">Multiplayer (2 Giocatori)</h3>
+            
+            <div class="app-card" data-target="tris">
+                <div class="app-icon" style="background: linear-gradient(135deg, #fbc2eb, #a6c1ee);">❌</div>
+                <div class="app-info">
+                    <h4>Tris Oceanico</h4>
+                    <p>Polpo vs Granchio</p>
+                </div>
+                <i class="fa-solid fa-chevron-right arrow"></i>
+            </div>
+            
+            <div class="app-card" data-target="navale">
+                <div class="app-icon" style="background: linear-gradient(135deg, #11998e, #38ef7d);">⚓</div>
+                <div class="app-info">
+                    <h4>Battaglia Navale</h4>
+                    <p>Affonda i sottomarini</p>
+                </div>
+                <i class="fa-solid fa-chevron-right arrow"></i>
+            </div>
 
-                <button class="menu-card" data-target="dama">
-                    <div class="icon-box" style="background: rgba(156, 39, 176, 0.2); color: #9c27b0;">🏁</div>
-                    <div class="card-text">
-                        <h4>Dama Marina</h4>
-                        <p>Sfida di strategia</p>
-                    </div>
-                    <i class="fa-solid fa-chevron-right arrow-icon"></i>
-                </button>
+            <div class="app-card" data-target="dama">
+                <div class="app-icon" style="background: linear-gradient(135deg, #8E2DE2, #4A00E0);">🏁</div>
+                <div class="app-info">
+                    <h4>Dama Marina</h4>
+                    <p>Conchiglie vs Stelle</p>
+                </div>
+                <i class="fa-solid fa-chevron-right arrow"></i>
+            </div>
+
+            <h3 class="section-title" style="margin-top: 25px;">Extra</h3>
+            
+            <div class="app-card" data-target="musica">
+                <div class="app-icon" style="background: linear-gradient(135deg, #f12711, #f5af19);">🎵</div>
+                <div class="app-info">
+                    <h4>Colonna Sonora</h4>
+                    <p>Riproduci la playlist</p>
+                </div>
+                <i class="fa-solid fa-chevron-right arrow"></i>
             </div>
         </div>
     </section>
 
     <!-- POLPO SNAKE -->
-    <section id="snake" class="view">
-        <div class="container glass-card game-container">
-            <h2 class="game-title">Polpo Snake 🐙</h2>
-            
+    <section id="snake" class="view game-view">
+        <div class="game-header">
+            <button class="back-btn" data-target="home"><i class="fa-solid fa-angle-left"></i> Menu</button>
+            <h2>Polpo Snake</h2>
+        </div>
+        <div class="game-content">
             <div class="pro-panel">
-                <div class="option-row">
-                    <label>Difficoltà</label>
-                    <select id="snake-diff" class="pro-select">
-                        <option value="easy">Facile</option>
-                        <option value="med" selected>Normale</option>
-                        <option value="hard">Pro</option>
-                    </select>
-                </div>
-                <button class="btn pro-btn-start" id="start-snake">Nuova Partita</button>
+                <select id="snake-diff" class="pro-select">
+                    <option value="easy">Livello: Facile</option>
+                    <option value="med" selected>Livello: Normale</option>
+                    <option value="hard">Livello: Difficile</option>
+                </select>
+                <button class="btn-start" id="start-snake">Gioca</button>
             </div>
-
             <div class="pro-scoreboard">
                 <div class="score-box"><span>PUNTI</span><strong id="snake-score">0</strong></div>
                 <div class="score-box highlight"><span>RECORD</span><strong id="snake-high">0</strong></div>
             </div>
-            
-            <div class="canvas-wrapper"><canvas id="snakeCanvas" width="400" height="400"></canvas></div>
-            
-            <!-- NUOVO CONTROLLER EVIDENTE -->
+            <div class="canvas-wrapper"><canvas id="snakeCanvas" width="340" height="340"></canvas></div>
             <div class="d-pad-pro">
-                <button class="dir-btn up" id="up"><i class="fa-solid fa-chevron-up"></i></button>
-                <button class="dir-btn left" id="left"><i class="fa-solid fa-chevron-left"></i></button>
-                <button class="dir-btn right" id="right"><i class="fa-solid fa-chevron-right"></i></button>
-                <button class="dir-btn down" id="down"><i class="fa-solid fa-chevron-down"></i></button>
+                <button class="dir-btn up" id="up"><i class="fa-solid fa-caret-up"></i></button>
+                <button class="dir-btn left" id="left"><i class="fa-solid fa-caret-left"></i></button>
+                <button class="dir-btn right" id="right"><i class="fa-solid fa-caret-right"></i></button>
+                <button class="dir-btn down" id="down"><i class="fa-solid fa-caret-down"></i></button>
             </div>
         </div>
     </section>
 
     <!-- DYBALA PONG -->
-    <section id="pong" class="view">
-        <div class="container glass-card game-container">
-            <h2 class="game-title">Dybala Pong ⚽</h2>
-            
+    <section id="pong" class="view game-view">
+        <div class="game-header">
+            <button class="back-btn" data-target="home"><i class="fa-solid fa-angle-left"></i> Menu</button>
+            <h2>Dybala Pong</h2>
+        </div>
+        <div class="game-content">
             <div class="pro-panel">
-                <div class="option-row">
-                    <label>Livello CPU</label>
-                    <select id="pong-diff" class="pro-select">
-                        <option value="easy">Dilettante</option>
-                        <option value="med" selected>Serie A</option>
-                        <option value="hard">Leggenda</option>
-                    </select>
-                </div>
-                <button class="btn pro-btn-start" id="start-pong">Calcio d'inizio</button>
+                <select id="pong-diff" class="pro-select">
+                    <option value="easy">Portiere: Dilettante</option>
+                    <option value="med" selected>Portiere: Serie A</option>
+                    <option value="hard">Portiere: Leggenda</option>
+                </select>
+                <button class="btn-start" id="start-pong">Inizia</button>
             </div>
-
             <div class="pro-scoreboard">
                 <div class="score-box"><span>DYBALA</span><strong id="pong-score-p1">0</strong></div>
                 <div class="score-box"><span>PORTIERE</span><strong id="pong-score-cpu">0</strong></div>
             </div>
-            
-            <div class="canvas-wrapper"><canvas id="pongCanvas" width="400" height="480"></canvas></div>
-            <p class="hint-text">Trascina Dybala a destra e sinistra per parare e tirare!</p>
+            <div class="canvas-wrapper"><canvas id="pongCanvas" width="340" height="420"></canvas></div>
         </div>
     </section>
 
     <!-- TRIS OCEANICO -->
-    <section id="tris" class="view">
-        <div class="container glass-card game-container">
-            <h2 class="game-title">Tris Oceanico 🐙</h2>
-            <div class="pro-scoreboard">
+    <section id="tris" class="view game-view">
+        <div class="game-header">
+            <button class="back-btn" data-target="home"><i class="fa-solid fa-angle-left"></i> Menu</button>
+            <h2>Tris Oceanico</h2>
+        </div>
+        <div class="game-content">
+            <div class="pro-scoreboard" style="margin-bottom: 20px;">
                 <div class="score-box"><span>POLPO</span><strong id="tris-score-p1">0</strong></div>
                 <div class="score-box"><span>GRANCHIO</span><strong id="tris-score-p2">0</strong></div>
             </div>
-            
             <div class="status-banner" id="tris-status">Tocca a: 🐙 Polpo</div>
-            
             <div class="board tris-board" id="tris-board">
                 <div class="cell" data-index="0"></div><div class="cell" data-index="1"></div><div class="cell" data-index="2"></div>
                 <div class="cell" data-index="3"></div><div class="cell" data-index="4"></div><div class="cell" data-index="5"></div>
                 <div class="cell" data-index="6"></div><div class="cell" data-index="7"></div><div class="cell" data-index="8"></div>
             </div>
-            <button class="btn pro-btn-start" id="reset-tris">Ricomincia</button>
+            <button class="btn-start" id="reset-tris" style="margin-top: 20px;">Nuova Partita</button>
         </div>
     </section>
 
     <!-- BATTAGLIA NAVALE -->
-    <section id="navale" class="view">
-        <div class="container glass-card game-container">
-            <h2 class="game-title">Battaglia Navale ⚓</h2>
+    <section id="navale" class="view game-view">
+        <div class="game-header">
+            <button class="back-btn" data-target="home"><i class="fa-solid fa-angle-left"></i> Menu</button>
+            <h2>Navale</h2>
+        </div>
+        <div class="game-content">
             <div class="status-banner" id="navale-status">Preparazione...</div>
-            
-            <div id="navale-setup" class="pro-panel">
-                <p style="font-weight:700; margin-bottom:10px;">Posiziona Sottomarino (Lungo <span id="ship-len">3</span>)</p>
-                <button class="btn pro-btn-secondary" id="btn-rotate">Gira Nave ➡️</button>
+            <div id="navale-setup" class="pro-panel" style="text-align: center;">
+                <p style="margin-bottom:10px; font-weight:700;">Nave (Lunga <span id="ship-len">3</span>)</p>
+                <button class="btn-start" id="btn-rotate" style="background: rgba(255,255,255,0.1); color: #fff;">Gira ➡️</button>
             </div>
-
-            <div style="position:relative; width: 100%; max-width: 340px; margin: 0 auto;">
+            <div style="position:relative; width: 100%; max-width: 320px; margin: 0 auto;">
                 <div id="navale-overlay" class="pro-overlay">
                     <h3>Passa il telefono!</h3>
-                    <button class="btn pro-btn-start" id="btn-navale-ready">Sono Pronto</button>
+                    <button class="btn-start" id="btn-navale-ready">Inizia Turno</button>
                 </div>
                 <div class="board navale-board" id="board-navale"></div>
             </div>
-            
-            <button class="btn pro-btn-secondary" id="reset-navale" style="margin-top:20px;">Abbandona Partita</button>
+            <button class="btn-start" id="reset-navale" style="margin-top:20px; background: rgba(255,255,255,0.1); color: white;">Resetta Tutto</button>
         </div>
     </section>
 
     <!-- DAMA MARINA -->
-    <section id="dama" class="view">
-        <div class="container glass-card game-container">
-            <h2 class="game-title">Dama Marina 🏁</h2>
-            <div class="pro-scoreboard">
+    <section id="dama" class="view game-view">
+        <div class="game-header">
+            <button class="back-btn" data-target="home"><i class="fa-solid fa-angle-left"></i> Menu</button>
+            <h2>Dama Marina</h2>
+        </div>
+        <div class="game-content">
+            <div class="pro-scoreboard" style="margin-bottom: 10px;">
                 <div class="score-box"><span>CONCHIGLIE</span><strong id="dama-score-p1">12</strong></div>
                 <div class="score-box"><span>STELLE</span><strong id="dama-score-p2">12</strong></div>
             </div>
-            
             <div class="status-banner" id="dama-status">Tocca alle Conchiglie 🐚</div>
-            
             <div class="dama-wrapper"><div class="board dama-board" id="dama-board"></div></div>
-            <button class="btn pro-btn-secondary" id="reset-dama" style="margin-top:20px;">Abbandona Partita</button>
+            <button class="btn-start" id="reset-dama" style="margin-top:20px; background: rgba(255,255,255,0.1); color: white;">Abbandona Partita</button>
         </div>
     </section>
 
-    <!-- NAVBAR INFERIORE -->
-    <nav class="bottom-nav">
-        <button class="nav-item active" data-target="home"><i class="fa-solid fa-house"></i></button>
-        <button class="nav-item" data-target="snake"><i class="fa-solid fa-fish"></i></button>
-        <button class="nav-item" data-target="pong"><i class="fa-solid fa-futbol"></i></button>
-        <button class="nav-item" data-target="navale"><i class="fa-solid fa-anchor"></i></button>
-    </nav>
+    <!-- PLAYER MUSICALE -->
+    <section id="musica" class="view game-view">
+        <div class="game-header">
+            <button class="back-btn" data-target="home"><i class="fa-solid fa-angle-left"></i> Menu</button>
+            <h2>La Nostra Musica</h2>
+        </div>
+        <div class="game-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+            <div class="record-wrapper"><img src="assets/foto-insieme.jpg" alt="Noi" id="record-cover" class="record"></div>
+            <h3 id="track-title" style="margin: 20px 0; font-size: 24px; color: #00d2ff; text-align: center;">Traccia 1</h3>
+            <div class="player-controls">
+                <button class="dir-btn" id="prev-track"><i class="fa-solid fa-backward"></i></button>
+                <button class="dir-btn" id="play-pause-btn" style="background: #00d2ff; color: #000;"><i class="fa-solid fa-play"></i></button>
+                <button class="dir-btn" id="next-track"><i class="fa-solid fa-forward"></i></button>
+            </div>
+            <p style="margin-top: 30px; color: #8892b0; font-size: 14px; text-align: center;">La musica continuerà a suonare<br>anche mentre giochi!</p>
+        </div>
+    </section>
 
     <script src="app.js"></script>
 </body>
