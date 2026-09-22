@@ -102,4 +102,35 @@ canvas { background: var(--canvas-bg); border-radius: 12px; border: 1px solid va
 
 .overlay-pass { position: absolute; top:0; left:0; width:100%; height:100%; background: var(--bg-main); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; border-radius: 16px; border: 1px solid var(--primary); opacity: 0.95; }
 .overlay-pass h3 { margin-bottom: 20px; font-size: 22px; color: var(--text-main); text-align: center;}
-@keyframes pop { 0% { transform: scale(0.6); } 100% { transform: scale(1); } }
+@keyframes pop { 0% { transform: scale(0.6); } 100% { transform: scale(1); } 
+/* --- INPUT NOMI GIOCATORI --- */
+.elegant-input { width: 100%; background: var(--surface); color: var(--text-main); border: 1px solid var(--border); padding: 10px 15px; border-radius: 10px; font-size: 14px; font-family: 'Poppins'; outline: none; transition: 0.2s; }
+.elegant-input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(0,229,255,0.2); }
+
+/* --- TASTI DI GESTIONE GIOCO E RITIRATA --- */
+.game-controls-row { display: flex; gap: 8px; width: 100%; max-width: 340px; margin-top: 15px; margin-bottom: 5px; }
+.btn-action { flex: 1; background: var(--surface); color: var(--text-main); border: 1px solid var(--border); border-radius: 12px; padding: 10px 5px; font-size: 12px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 6px; font-weight: 600;}
+.btn-action i { font-size: 18px; color: var(--primary); }
+.btn-action:active { background: var(--surface-hover); transform: scale(0.95); border-color: var(--primary); }
+#resign-tris i, #resign-navale i, #resign-dama i { color: #ff2a6d; } /* Bandiera rossa per ritiro */
+
+/* --- D-PAD SNAKE (Più vicino allo schermo) --- */
+.d-pad { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; gap: 12px; margin-top: 5px; width: 220px; height: 220px; }
+.dir-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; color: var(--text-main); font-size: 26px; display: flex; justify-content: center; align-items: center; transition: 0.1s; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+.dir-btn:active { background: var(--primary); color: #fff; transform: scale(0.9); }
+.up { grid-area: up; } .down { grid-area: down; } .left { grid-area: left; } .right { grid-area: right; }
+
+/* --- REGOLE DAMA UFFICIALE E PEDINE GIRATE --- */
+.dama-wrapper { border: 2px solid var(--border); border-radius: 12px; overflow: hidden; width: 100%; max-width: 340px; position: relative;}
+.dama-board { display: grid; grid-template-columns: repeat(8, 1fr); background: var(--dama-light); }
+.dama-cell { aspect-ratio: 1; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; }
+.dama-cell.black { background: var(--dama-dark); }
+.dama-cell.selected { border: 3px solid #ffab00; box-shadow: inset 0 0 15px rgba(255, 171, 0, 0.5); }
+.dama-cell.valid-move { box-shadow: inset 0 0 15px rgba(0, 229, 255, 0.7); }
+.dama-cell.must-jump { box-shadow: inset 0 0 25px rgba(255, 42, 109, 0.9); }
+
+.piece { font-size: 24px; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); transition: 0.2s; position: relative; z-index: 2; display: flex; justify-content: center; align-items: center;}
+.piece.p2 { transform: rotate(180deg); } /* Gira le pedine del Giocatore 2 (Maghi) a testa in giù! */
+.piece.king { filter: drop-shadow(0 0 10px gold); transform: scale(1.15); }
+.piece.p2.king { transform: scale(1.15) rotate(180deg); } 
+.piece.king::after { content: '👑'; position: absolute; top: -12px; right: -12px; font-size: 14px; filter: none; } }
