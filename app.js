@@ -1,5 +1,5 @@
 // ==========================================
-// 0. TEMA GIORNO E NOTTE
+// 0. TEMA AUTOMATICO E SICUREZZA USCITA APP
 // ==========================================
 function applyTheme() {
     const hour = new Date().getHours();
@@ -8,13 +8,21 @@ function applyTheme() {
 }
 applyTheme(); setInterval(applyTheme, 60000);
 
+// FIX BUG: Se esci dall'app (WhatsApp, home telefono) mette in pausa!
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        if (isSnakeActive && !isSnakePaused) document.getElementById('pause-snake').click();
+        if (isPongActive && !isPongPaused) document.getElementById('pause-pong').click();
+    }
+});
+
 // ==========================================
-// 1. SISTEMA SALVATAGGIO
+// 1. SALVATAGGIO CLASSIFICA
 // ==========================================
-let scores = JSON.parse(localStorage.getItem('octoProFinal')) || { 
+let scores = JSON.parse(localStorage.getItem('octoFinalPro')) || { 
     snake: { easy:0, med:0, hard:0 }, pong: { easy:0, med:0, hard:0 }, tris: { p1:0, p2:0 }, navale:{ p1:0, p2:0 }, dama: { p1:0, p2:0 }
 };
-function saveScores() { localStorage.setItem('octoProFinal', JSON.stringify(scores)); updateLeaderboardUI(); }
+function saveScores() { localStorage.setItem('octoFinalPro', JSON.stringify(scores)); updateLeaderboardUI(); }
 function updateLeaderboardUI() {
     document.getElementById('lb-snake-easy').innerText = scores.snake.easy; document.getElementById('lb-snake-med').innerText = scores.snake.med; document.getElementById('lb-snake-hard').innerText = scores.snake.hard;
     document.getElementById('lb-pong-easy').innerText = scores.pong.easy; document.getElementById('lb-pong-med').innerText = scores.pong.med; document.getElementById('lb-pong-hard').innerText = scores.pong.hard;
@@ -29,16 +37,26 @@ updateLeaderboardUI();
 // ==========================================
 const views = document.querySelectorAll('.view');
 let isSnakeActive = false, isPongActive = false, isSnakePaused = false, isPongPaused = false;
-let snakeAnimReq, pongAnimReq; // Per cancellare i loop precedenti ed evitare bug
+let snakeAnimReq, pongAnimReq; 
 
 document.querySelectorAll('.open-game').forEach(btn => {
     btn.addEventListener('click', () => {
         const target = btn.getAttribute('data-target');
         views.forEach(v => v.classList.remove('active'));
         document.getElementById(target).classList.add('active');
-        isSnakeActive = (target === 'snake'); isPongActive = (target === 'pong');
+        isSnakeActive = false; isPongActive = false;
         
-        if(target === 'snake') { document.getElementById('snake-score').innerText = '0'; document.getElementById('snake-high').innerText = scores.snake[document.getElementById('snake-diff').value]; document.getElementById('snake-overlay').style.display = 'none'; }
+        if(target === 'snake') { 
+            document.getElementById('snake-score').innerText = '0'; 
+            document.getElementById('snake-high').innerText = scores.snake[document.getElementById('snake-diff').value]; 
+            document.getElementById('snake-overlay').style.display = 'none'; 
+            document.getElementById('snake-menu-panel').style.display = 'flex';
+        }
+        if(target === 'pong') { 
+            document.getElementById('pong-score-p1').innerText = '0'; document.getElementById('pong-score-cpu').innerText = '0';
+            document.getElementById('pong-overlay').style.display = 'none';
+            document.getElementById('pong-menu-panel').style.display = 'flex';
+        }
     });
 });
 
@@ -51,18 +69,18 @@ document.querySelectorAll('.back-btn').forEach(btn => {
 });
 
 // ==========================================
-// 3. POLPO SNAKE (Fix Bug + Tasti Gestione)
+// 3. POLPO SNAKE (Grafica Gigante & Polizia)
 // ==========================================
 const snakeCanvas = document.getElementById('snakeCanvas'); const sCtx = snakeCanvas.getContext('2d');
-const gridSize = 16; const tileCount = 20; 
+const gridSize = 20; const tileCount = 17; // 340 / 20 = 17
 let snake = [], dx = 0, dy = 0, foodX, foodY, rocks = [], snakeScore = 0, currentDiffS = 'med', gameSpeed = 120, lastRenderTime = 0;
 
 function initSnake() {
-    cancelAnimationFrame(snakeAnimReq); // FIX: Ferma eventuali altri loop sovrapposti
+    cancelAnimationFrame(snakeAnimReq); document.getElementById('snake-menu-panel').style.display = 'none';
     currentDiffS = document.getElementById('snake-diff').value;
     let numRocks = currentDiffS === 'easy' ? 3 : (currentDiffS === 'med' ? 8 : 15);
     gameSpeed = currentDiffS === 'easy' ? 140 : (currentDiffS === 'med' ? 100 : 70);
-    snake = [{ x: 10, y: 10 }]; dx = 0; dy = 0; snakeScore = 0; isSnakePaused = false;
+    snake = [{ x: 8, y: 8 }]; dx = 0; dy = 0; snakeScore = 0; isSnakePaused = false;
     document.getElementById('pause-snake').innerHTML = '<i class="fa-solid fa-pause"></i> Pausa';
     document.getElementById('snake-score').innerText = snakeScore;
     document.getElementById('snake-high').innerText = scores.snake[currentDiffS];
@@ -71,24 +89,31 @@ function initSnake() {
     rocks = [];
     for(let i=0; i<numRocks; i++) {
         let rx, ry, isValid = false;
-        while(!isValid) { rx=Math.floor(Math.random()*tileCount); ry=Math.floor(Math.random()*tileCount); if(!(rx>5 && rx<15 && ry>5 && ry<15)) isValid = true; }
+        while(!isValid) { rx=Math.floor(Math.random()*tileCount); ry=Math.floor(Math.random()*tileCount); if(!(rx>4 && rx<12 && ry>4 && ry<12)) isValid = true; }
         rocks.push({x: rx, y: ry});
     }
     placeFoodS(); isSnakeActive = true; snakeAnimReq = window.requestAnimationFrame(snakeLoop);
 }
 
 document.getElementById('start-snake').addEventListener('click', initSnake);
-document.getElementById('retry-snake').addEventListener('click', initSnake);
-document.getElementById('restart-snake').addEventListener('click', () => { if(isSnakeActive || isSnakePaused) initSnake(); });
+document.getElementById('restart-snake').addEventListener('click', () => { if(isSnakeActive || document.getElementById('snake-overlay').style.display === 'flex' || isSnakePaused) initSnake(); });
+document.getElementById('resume-snake').addEventListener('click', () => { isSnakePaused = false; document.getElementById('snake-overlay').style.display = 'none'; document.getElementById('pause-snake').innerHTML = '<i class="fa-solid fa-pause"></i> Pausa'; });
+
 document.getElementById('pause-snake').addEventListener('click', () => {
     if(!isSnakeActive && !isSnakePaused) return;
-    isSnakePaused = !isSnakePaused;
-    document.getElementById('pause-snake').innerHTML = isSnakePaused ? '<i class="fa-solid fa-play"></i> Play' : '<i class="fa-solid fa-pause"></i> Pausa';
+    isSnakePaused = true;
+    document.getElementById('snake-overlay-title').innerText = "In Pausa";
+    document.getElementById('snake-final-score').innerText = snakeScore;
+    document.getElementById('resume-snake').style.display = 'block';
+    document.getElementById('snake-overlay').style.display = 'flex';
 });
+
 document.getElementById('end-snake').addEventListener('click', () => {
     if(!isSnakeActive && !isSnakePaused) return;
     isSnakeActive = false; isSnakePaused = false;
+    document.getElementById('snake-overlay-title').innerText = "Partita Terminata";
     document.getElementById('snake-final-score').innerText = snakeScore;
+    document.getElementById('resume-snake').style.display = 'none';
     document.getElementById('snake-overlay').style.display = 'flex';
 });
 
@@ -106,7 +131,7 @@ function snakeLoop(timestamp) {
     
     const head = { x: snake[0].x + dx, y: snake[0].y + dy };
     if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount || snake.some(p => p.x===head.x && p.y===head.y) || rocks.some(r => r.x===head.x && r.y===head.y)) {
-        isSnakeActive = false; document.getElementById('snake-final-score').innerText = snakeScore; document.getElementById('snake-overlay').style.display = 'flex'; return;
+        document.getElementById('end-snake').click(); return; // Innesca la fine
     }
     snake.unshift(head);
     if (head.x === foodX && head.y === foodY) {
@@ -118,30 +143,29 @@ function snakeLoop(timestamp) {
 }
 
 function drawSnakeMap() {
-    sCtx.clearRect(0, 0, snakeCanvas.width, snakeCanvas.height); sCtx.font = "14px Arial";
-    rocks.forEach(r => sCtx.fillText('🪨', r.x * gridSize, r.y * gridSize + 13)); sCtx.fillText('🐟', foodX * gridSize, foodY * gridSize + 13);
-    snake.forEach((part, i) => { if (i === 0) sCtx.fillText('🐙', part.x*gridSize-1, part.y*gridSize+13); else { sCtx.fillStyle = '#00e5ff'; sCtx.beginPath(); sCtx.arc(part.x*gridSize+gridSize/2, part.y*gridSize+gridSize/2, gridSize/2.5, 0, Math.PI*2); sCtx.fill(); } });
+    sCtx.clearRect(0, 0, snakeCanvas.width, snakeCanvas.height); sCtx.font = "20px Arial";
+    rocks.forEach(r => sCtx.fillText('👮', r.x * gridSize - 2, r.y * gridSize + 16)); 
+    sCtx.fillText('🚬', foodX * gridSize - 2, foodY * gridSize + 16);
+    snake.forEach((part, i) => { if (i === 0) sCtx.fillText('🐙', part.x*gridSize-2, part.y*gridSize+16); else { sCtx.fillStyle = '#00e5ff'; sCtx.beginPath(); sCtx.arc(part.x*gridSize+gridSize/2, part.y*gridSize+gridSize/2, gridSize/2.2, 0, Math.PI*2); sCtx.fill(); } });
 }
 function sDir(ndx, ndy) { if(dx!==0 && ndx!==0) return; if(dy!==0 && ndy!==0) return; dx=ndx; dy=ndy; }
 ['click', 'touchstart'].forEach(evt => {
-    document.getElementById('up').addEventListener(evt, e=>{e.preventDefault(); sDir(0,-1);});
-    document.getElementById('down').addEventListener(evt, e=>{e.preventDefault(); sDir(0,1);});
-    document.getElementById('left').addEventListener(evt, e=>{e.preventDefault(); sDir(-1,0);});
-    document.getElementById('right').addEventListener(evt, e=>{e.preventDefault(); sDir(1,0);});
+    document.getElementById('up').addEventListener(evt, e=>{e.preventDefault(); sDir(0,-1);}); document.getElementById('down').addEventListener(evt, e=>{e.preventDefault(); sDir(0,1);});
+    document.getElementById('left').addEventListener(evt, e=>{e.preventDefault(); sDir(-1,0);}); document.getElementById('right').addEventListener(evt, e=>{e.preventDefault(); sDir(1,0);});
 });
 
 // ==========================================
-// 4. DYBALA PONG (Fix Bug, Tasti Gestione e Porte)
+// 4. CALCIO PONG (Bianconero vs Rossoblu)
 // ==========================================
 const pCanvas = document.getElementById('pongCanvas'); const pCtx = pCanvas.getContext('2d');
-const pw = 70, ph = 15, netW = 120;
-const ball = { x: 160, y: 210, r: 10, dx: 0, dy: 0, speed: 4.5 };
-const dybala = { x: 125, y: 390, score: 0 }; const cpu = { x: 125, y: 15, score: 0 };
+const pw = 80, ph = 15, netW = 120;
+const ball = { x: 170, y: 220, r: 10, dx: 0, dy: 0, speed: 5 };
+const giocatore = { x: 130, y: 410, score: 0 }; const cpu = { x: 130, y: 15, score: 0 };
 let pongDiff = 'med'; 
 
 function initPong() {
-    cancelAnimationFrame(pongAnimReq); // FIX sovrapposizione livelli
-    pongDiff = document.getElementById('pong-diff').value; dybala.score = 0; cpu.score = 0; 
+    cancelAnimationFrame(pongAnimReq); document.getElementById('pong-menu-panel').style.display = 'none';
+    pongDiff = document.getElementById('pong-diff').value; giocatore.score = 0; cpu.score = 0; 
     document.getElementById('pong-score-p1').innerText = 0; document.getElementById('pong-score-cpu').innerText = 0;
     isPongActive = true; isPongPaused = false;
     document.getElementById('pause-pong').innerHTML = '<i class="fa-solid fa-pause"></i> Pausa';
@@ -150,19 +174,24 @@ function initPong() {
 }
 
 document.getElementById('start-pong').addEventListener('click', initPong);
-document.getElementById('resume-pong').addEventListener('click', initPong); // Nuova partita dal game over
-document.getElementById('restart-pong').addEventListener('click', () => { if(isPongActive || isPongPaused) initPong(); });
+document.getElementById('restart-pong').addEventListener('click', () => { if(isPongActive || document.getElementById('pong-overlay').style.display === 'flex' || isPongPaused) initPong(); });
 
 document.getElementById('pause-pong').addEventListener('click', () => {
     if(!isPongActive && !isPongPaused) return;
-    isPongPaused = !isPongPaused;
-    document.getElementById('pause-pong').innerHTML = isPongPaused ? '<i class="fa-solid fa-play"></i> Play' : '<i class="fa-solid fa-pause"></i> Pausa';
+    isPongPaused = true;
+    document.getElementById('pong-overlay-title').innerText = "In Pausa";
+    document.getElementById('resume-pong').style.display = 'block'; document.getElementById('pong-overlay').style.display = 'flex';
 });
+
+document.getElementById('resume-pong').addEventListener('click', () => {
+    isPongPaused = false; document.getElementById('pong-overlay').style.display = 'none';
+});
+
 document.getElementById('end-pong').addEventListener('click', () => {
     if(!isPongActive && !isPongPaused) return;
     isPongActive = false; isPongPaused = false;
-    document.getElementById('pong-final-text').innerText = "Partita Terminata";
-    document.getElementById('pong-overlay').style.display = 'flex';
+    document.getElementById('pong-overlay-title').innerText = `Fine! Tu: ${giocatore.score} - CPU: ${cpu.score}`;
+    document.getElementById('resume-pong').style.display = 'none'; document.getElementById('pong-overlay').style.display = 'flex';
 });
 
 function resetSoccerBall() {
@@ -173,7 +202,7 @@ function resetSoccerBall() {
 pCanvas.addEventListener('touchmove', e => {
     e.preventDefault(); if(!isPongActive || isPongPaused) return;
     let touchX = e.touches[0].clientX - pCanvas.getBoundingClientRect().left;
-    dybala.x = Math.max(0, Math.min(touchX - pw/2, pCanvas.width - pw));
+    giocatore.x = Math.max(0, Math.min(touchX - pw/2, pCanvas.width - pw));
 }, {passive: false});
 
 function pongLoop() { 
@@ -190,29 +219,30 @@ function updateSoccer() {
     if (ball.dx === 0 && ball.dy === 0) return;
     ball.x += ball.dx; ball.y += ball.dy;
     
-    if(ball.x-ball.r < 0 || ball.x+ball.r > pCanvas.width) ball.dx = -ball.dx;
+    // FIX ANTI INCASTRO SUI LATI
+    if(ball.x - ball.r < 0) { ball.x = ball.r; ball.dx = -ball.dx; } 
+    else if(ball.x + ball.r > pCanvas.width) { ball.x = pCanvas.width - ball.r; ball.dx = -ball.dx; }
 
+    // GOL O RIMBALZO
     if(ball.y-ball.r < 0) {
-        if(ball.x > pCanvas.width/2-netW/2 && ball.x < pCanvas.width/2+netW/2) { dybala.score++; document.getElementById('pong-score-p1').innerText = dybala.score; resetSoccerBall(); }
+        if(ball.x > pCanvas.width/2-netW/2 && ball.x < pCanvas.width/2+netW/2) { giocatore.score++; document.getElementById('pong-score-p1').innerText = giocatore.score; resetSoccerBall(); }
         else ball.dy = -ball.dy;
     } else if (ball.y+ball.r > pCanvas.height) {
         if(ball.x > pCanvas.width/2-netW/2 && ball.x < pCanvas.width/2+netW/2) { cpu.score++; document.getElementById('pong-score-cpu').innerText = cpu.score; resetSoccerBall(); }
         else ball.dy = -ball.dy;
     }
     
-    if(ball.dy>0 && ball.y+ball.r > dybala.y && ball.x+ball.r > dybala.x && ball.x-ball.r < dybala.x+pw) { ball.dy = -ball.speed; ball.y = dybala.y-ball.r; ball.dx = ((ball.x-(dybala.x+pw/2))/(pw/2))*4; }
-    if(ball.dy<0 && ball.y-ball.r < cpu.y+ph && ball.x+ball.r > cpu.x && ball.x-ball.r < cpu.x+pw) { ball.dy = ball.speed; ball.y = cpu.y+ph+ball.r; ball.dx = ((ball.x-(cpu.x+pw/2))/(pw/2))*4; }
+    // FIX ANTI INCASTRO BARRETTE
+    if(ball.dy>0 && ball.y+ball.r > giocatore.y && ball.x+ball.r > giocatore.x && ball.x-ball.r < giocatore.x+pw) { ball.y = giocatore.y - ball.r; ball.dy = -ball.speed; ball.dx = ((ball.x-(giocatore.x+pw/2))/(pw/2))*4; }
+    if(ball.dy<0 && ball.y-ball.r < cpu.y+ph && ball.x+ball.r > cpu.x && ball.x-ball.r < cpu.x+pw) { ball.y = cpu.y + ph + ball.r; ball.dy = ball.speed; ball.dx = ((ball.x-(cpu.x+pw/2))/(pw/2))*4; }
 }
 
 function drawSoccer() {
     pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
     
-    // Disegna porte Distinguibili (Rete bianca trasparente)
+    // Porte (Rete bianca)
     pCtx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-    pCtx.fillRect(pCanvas.width/2-netW/2, 0, netW, 40); // Porta Alta
-    pCtx.fillRect(pCanvas.width/2-netW/2, pCanvas.height-40, netW, 40); // Porta Bassa
-    
-    // Griglia (Rete) visiva
+    pCtx.fillRect(pCanvas.width/2-netW/2, 0, netW, 40); pCtx.fillRect(pCanvas.width/2-netW/2, pCanvas.height-40, netW, 40);
     pCtx.beginPath();
     for(let i=0; i<=netW; i+=15) { pCtx.moveTo(pCanvas.width/2-netW/2 + i, 0); pCtx.lineTo(pCanvas.width/2-netW/2 + i, 40); pCtx.moveTo(pCanvas.width/2-netW/2 + i, pCanvas.height-40); pCtx.lineTo(pCanvas.width/2-netW/2 + i, pCanvas.height); }
     for(let j=0; j<=40; j+=15) { pCtx.moveTo(pCanvas.width/2-netW/2, j); pCtx.lineTo(pCanvas.width/2+netW/2, j); pCtx.moveTo(pCanvas.width/2-netW/2, pCanvas.height-j); pCtx.lineTo(pCanvas.width/2+netW/2, pCanvas.height-j); }
@@ -224,14 +254,20 @@ function drawSoccer() {
     pCtx.beginPath(); pCtx.arc(pCanvas.width/2, pCanvas.height/2, 30, 0, Math.PI*2); pCtx.stroke();
     pCtx.strokeRect(pCanvas.width/2-netW/2, 0, netW, 40); pCtx.strokeRect(pCanvas.width/2-netW/2, pCanvas.height-40, netW, 40);
 
-    // Giocatori e Palla
-    pCtx.fillStyle = '#00e5ff'; pCtx.fillRect(dybala.x, dybala.y, pw, ph); 
-    pCtx.fillStyle = '#ff2a6d'; pCtx.fillRect(cpu.x, cpu.y, pw, ph); 
+    let halfW = pw / 2;
+    // Giocatore (Bianconero)
+    pCtx.fillStyle = '#ffffff'; pCtx.fillRect(giocatore.x, giocatore.y, halfW, ph);
+    pCtx.fillStyle = '#111111'; pCtx.fillRect(giocatore.x + halfW, giocatore.y, halfW, ph);
+    
+    // CPU (Rossoblu)
+    pCtx.fillStyle = '#b30000'; pCtx.fillRect(cpu.x, cpu.y, halfW, ph);
+    pCtx.fillStyle = '#000066'; pCtx.fillRect(cpu.x + halfW, cpu.y, halfW, ph);
+    
     pCtx.font = "18px Arial"; pCtx.fillText('⚽', ball.x-10, ball.y+6);
 }
 
 // ==========================================
-// 5. TRIS OCEANICO
+// 5. TRIS MAGICO (Polpo vs Mago)
 // ==========================================
 const tCells = document.querySelectorAll('.tris-board .cell'); const tStatus = document.getElementById('tris-status');
 let tBoard = ['', '', '', '', '', '', '', '', '']; let isTrisActive = true; let currentTurn = '🐙';
@@ -242,18 +278,18 @@ tCells.forEach(cell => cell.addEventListener('click', (e) => {
     let idx = e.target.getAttribute('data-index'); if (tBoard[idx] !== '' || !isTrisActive) return;
     tBoard[idx] = currentTurn; e.target.innerText = currentTurn;
     if (winC.some(c => tBoard[c[0]] && tBoard[c[0]] === tBoard[c[1]] && tBoard[c[0]] === tBoard[c[2]])) {
-        tStatus.innerText = `Fine Partita! Vince ${currentTurn === '🐙' ? 'Polpo' : 'Granchio'}`;
+        tStatus.innerText = `Fine! Vince il ${currentTurn === '🐙' ? 'Polpo 🐙' : 'Mago 🧙‍♂️'}`;
         if(currentTurn === '🐙') scores.tris.p1++; else scores.tris.p2++;
         document.getElementById('tris-score-p1').innerText = scores.tris.p1; document.getElementById('tris-score-p2').innerText = scores.tris.p2;
         saveScores(); isTrisActive = false; return;
     }
     if (!tBoard.includes('')) { tStatus.innerText = 'Pareggio!'; isTrisActive = false; return; }
-    currentTurn = currentTurn === '🐙' ? '🦀' : '🐙'; tStatus.innerText = `Tocca a: ${currentTurn}`;
+    currentTurn = currentTurn === '🐙' ? '🧙‍♂️' : '🐙'; tStatus.innerText = `Tocca a: ${currentTurn}`;
 }));
 document.getElementById('reset-tris').addEventListener('click', () => { tBoard=['','','','','','','','','']; isTrisActive=true; currentTurn='🐙'; tStatus.innerText='Tocca a: 🐙'; tCells.forEach(c=>c.innerText=''); });
 
 // ==========================================
-// 6. NAVALE E 7. DAMA (Identiche, logica precedente)
+// 6. NAVALE
 // ==========================================
 let p1Grid=Array(36).fill(0), p2Grid=Array(36).fill(0), p1Rev=Array(36).fill(false), p2Rev=Array(36).fill(false);
 let nTurn=1, nHits1=0, nHits2=0, nPhase='setup1', nShips=[3,2,2], cShipIdx=0, isHoriz=true, isNavaleOver=false;
@@ -264,10 +300,17 @@ function placeShip(idx,grid){ if(cShipIdx>=nShips.length) return; let len=nShips
 function shoot(idx,grid,rev){ if(isNavaleOver||rev[idx]) return; rev[idx]=true; drawNavale(); if(grid[idx]===1){ nTurn===1?nHits1++:nHits2++; if(nHits1===7||nHits2===7){ isNavaleOver=true; document.getElementById('navale-status').innerText=`Fine Partita! Vince G${nTurn}!`; if(nTurn===1) scores.navale.p1++; else scores.navale.p2++; saveScores(); return; } } setTimeout(()=>{ nTurn=nTurn===1?2:1; document.getElementById('navale-overlay-title').innerText="Passa il telefono!"; document.getElementById('navale-overlay').style.display='flex'; }, 800); }
 document.getElementById('btn-navale-ready').addEventListener('click', ()=>{document.getElementById('navale-overlay').style.display='none'; drawNavale();}); document.getElementById('reset-navale').addEventListener('click', initNavale); initNavale();
 
+// ==========================================
+// 7. DAMA (Polpi vs Maghi & Conteggio Mangiate)
+// ==========================================
 let dGrid=[], turnD=1, selPos=null, p1Pieces=12, p2Pieces=12, isDamaActive=true;
-document.getElementById('dama-score-p1').innerText = scores.dama.p1; document.getElementById('dama-score-p2').innerText = scores.dama.p2;
+
 function initDama() { dGrid=Array(64).fill(0); turnD=1; selPos=null; p1Pieces=12; p2Pieces=12; isDamaActive=true; document.getElementById('dama-overlay').style.display='none'; for(let r=0;r<8;r++) for(let c=0;c<8;c++) if((r+c)%2!==0){ if(r<3) dGrid[r*8+c]=1; else if(r>4) dGrid[r*8+c]=2; } updateDScore(); drawDama(); }
-function updateDScore() { document.getElementById('dama-status').innerText=`Tocca a: ${turnD===1?'🐚 Conchiglie':'⭐ Stelle'}`; }
-function drawDama() { const b=document.getElementById('dama-board'); b.innerHTML=''; for(let i=0;i<64;i++){ let div=document.createElement('div'); let r=Math.floor(i/8), c=i%8; div.className=`dama-cell ${(r+c)%2===0?'white':'black'}`; if(selPos===i) div.classList.add('selected'); if(dGrid[i]!==0){ let p=document.createElement('div'); p.className='piece'; p.innerText=dGrid[i]===1?'🐚':'⭐'; div.appendChild(p); } div.addEventListener('click',()=>handleDamaClick(i)); b.appendChild(div); } }
-function handleDamaClick(idx) { if(!isDamaActive) return; let r=Math.floor(idx/8), c=idx%8; if((r+c)%2===0) return; if(selPos===null){ if(dGrid[idx]===turnD){ selPos=idx; drawDama(); } } else{ if(selPos===idx){ selPos=null; drawDama(); return; } let sr=Math.floor(selPos/8), sc=selPos%8, dr=r-sr, dc=Math.abs(c-sc), dir=turnD===1?1:-1; if(dr===dir && dc===1 && dGrid[idx]===0){ dGrid[idx]=turnD; dGrid[selPos]=0; turnD=turnD===1?2:1; selPos=null; } else if(dr===dir*2 && dc===2 && dGrid[idx]===0){ let midIdx=(sr+dir)*8 + (c>sc?sc+1:sc-1); if(dGrid[midIdx]!==0 && dGrid[midIdx]!==turnD){ dGrid[idx]=turnD; dGrid[selPos]=0; dGrid[midIdx]=0; turnD===1?p2Pieces--:p1Pieces--; turnD=turnD===1?2:1; selPos=null; } else selPos=null; } else selPos=null; updateDScore(); drawDama(); if(p1Pieces===0||p2Pieces===0){ isDamaActive=false; let vince=p1Pieces===0?"Stelle ⭐":"Conchiglie 🐚"; if(p1Pieces===0) scores.dama.p2++; else scores.dama.p1++; saveScores(); document.getElementById('dama-overlay-title').innerText=`Fine Partita!\nVince: ${vince}`; document.getElementById('dama-overlay').style.display='flex'; } } }
+function updateDScore() { 
+    document.getElementById('dama-cap-p1').innerText = 12 - p2Pieces; // Maghi mangiati
+    document.getElementById('dama-cap-p2').innerText = 12 - p1Pieces; // Polpi mangiati
+    document.getElementById('dama-status').innerText=`Tocca a: ${turnD===1?'🐙 Polpi':'🧙‍♂️ Maghi'}`; 
+}
+function drawDama() { const b=document.getElementById('dama-board'); b.innerHTML=''; for(let i=0;i<64;i++){ let div=document.createElement('div'); let r=Math.floor(i/8), c=i%8; div.className=`dama-cell ${(r+c)%2===0?'white':'black'}`; if(selPos===i) div.classList.add('selected'); if(dGrid[i]!==0){ let p=document.createElement('div'); p.className='piece'; p.innerText=dGrid[i]===1?'🐙':'🧙‍♂️'; div.appendChild(p); } div.addEventListener('click',()=>handleDamaClick(i)); b.appendChild(div); } }
+function handleDamaClick(idx) { if(!isDamaActive) return; let r=Math.floor(idx/8), c=idx%8; if((r+c)%2===0) return; if(selPos===null){ if(dGrid[idx]===turnD){ selPos=idx; drawDama(); } } else{ if(selPos===idx){ selPos=null; drawDama(); return; } let sr=Math.floor(selPos/8), sc=selPos%8, dr=r-sr, dc=Math.abs(c-sc), dir=turnD===1?1:-1; if(dr===dir && dc===1 && dGrid[idx]===0){ dGrid[idx]=turnD; dGrid[selPos]=0; turnD=turnD===1?2:1; selPos=null; } else if(dr===dir*2 && dc===2 && dGrid[idx]===0){ let midIdx=(sr+dir)*8 + (c>sc?sc+1:sc-1); if(dGrid[midIdx]!==0 && dGrid[midIdx]!==turnD){ dGrid[idx]=turnD; dGrid[selPos]=0; dGrid[midIdx]=0; turnD===1?p2Pieces--:p1Pieces--; turnD=turnD===1?2:1; selPos=null; } else selPos=null; } else selPos=null; updateDScore(); drawDama(); if(p1Pieces===0||p2Pieces===0){ isDamaActive=false; let vince=p1Pieces===0?"Maghi 🧙‍♂️":"Polpi 🐙"; if(p1Pieces===0) scores.dama.p2++; else scores.dama.p1++; saveScores(); document.getElementById('dama-overlay-title').innerText=`Fine Partita!\nVince: ${vince}`; document.getElementById('dama-overlay').style.display='flex'; } } }
 document.getElementById('reset-dama').addEventListener('click', initDama); document.getElementById('retry-dama').addEventListener('click', initDama); initDama();
