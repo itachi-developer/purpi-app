@@ -20,16 +20,17 @@
             <div class="games-list">
                 <button class="game-card open-game" data-target="leaderboard" style="border-color: #00E5FF; margin-bottom: 20px;">
                     <div class="card-icon" style="background: rgba(0, 229, 255, 0.2); color: #00e5ff;">🏆</div>
-                    <div class="card-info"><h3 style="color: #00e5ff;">Hall of Fame</h3><p>Guarda i record e le vittorie</p></div>
+                    <div class="card-info"><h3 style="color: #00e5ff;">Classifica</h3><p>Guarda i record e le vittorie</p></div>
                     <i class="fa-solid fa-chevron-right card-arrow"></i>
                 </button>
                 <div class="section-title">Giocatore Singolo</div>
-                <button class="game-card open-game" data-target="snake"><div class="card-icon" style="background: rgba(0, 229, 255, 0.1); color: #00e5ff;">🐙</div><div class="card-info"><h3>Polpo Snake</h3><p>Evita le rocce oceaniche</p></div><i class="fa-solid fa-chevron-right card-arrow"></i></button>
-                <button class="game-card open-game" data-target="pong"><div class="card-icon" style="background: rgba(255, 42, 109, 0.1); color: #ff2a6d;">⚽</div><div class="card-info"><h3>Dybala Pong</h3><p>Batti il portiere CPU</p></div><i class="fa-solid fa-chevron-right card-arrow"></i></button>
+                <button class="game-card open-game" data-target="snake"><div class="card-icon" style="background: rgba(0, 229, 255, 0.1); color: #00e5ff;">🐙</div><div class="card-info"><h3>Polpo Snake</h3><p>Fuggi dalla polizia 👮</p></div><i class="fa-solid fa-chevron-right card-arrow"></i></button>
+                <button class="game-card open-game" data-target="pong"><div class="card-icon" style="background: rgba(255, 42, 109, 0.1); color: #ff2a6d;">⚽</div><div class="card-info"><h3>Calcio Pong</h3><p>Bianconeri vs Rossoblu</p></div><i class="fa-solid fa-chevron-right card-arrow"></i></button>
+                
                 <div class="section-title" style="margin-top: 20px;">Multiplayer Locale (2 Giocatori)</div>
-                <button class="game-card open-game" data-target="tris"><div class="card-icon" style="background: rgba(255, 171, 0, 0.1); color: #ffab00;">❌</div><div class="card-info"><h3>Tris Oceanico</h3><p>Polpo vs Granchio</p></div><i class="fa-solid fa-chevron-right card-arrow"></i></button>
+                <button class="game-card open-game" data-target="tris"><div class="card-icon" style="background: rgba(255, 171, 0, 0.1); color: #ffab00;">❌</div><div class="card-info"><h3>Tris Magico</h3><p>Polpi vs Maghi</p></div><i class="fa-solid fa-chevron-right card-arrow"></i></button>
                 <button class="game-card open-game" data-target="navale"><div class="card-icon" style="background: rgba(0, 230, 118, 0.1); color: #00e676;">⚓</div><div class="card-info"><h3>Battaglia Navale</h3><p>Affonda la flotta avversaria</p></div><i class="fa-solid fa-chevron-right card-arrow"></i></button>
-                <button class="game-card open-game" data-target="dama"><div class="card-icon" style="background: rgba(224, 64, 251, 0.1); color: #e040fb;">🏁</div><div class="card-info"><h3>Dama Marina</h3><p>Conchiglie vs Stelle</p></div><i class="fa-solid fa-chevron-right card-arrow"></i></button>
+                <button class="game-card open-game" data-target="dama"><div class="card-icon" style="background: rgba(224, 64, 251, 0.1); color: #e040fb;">🏁</div><div class="card-info"><h3>Dama Marina</h3><p>La sfida finale</p></div><i class="fa-solid fa-chevron-right card-arrow"></i></button>
             </div>
         </section>
 
@@ -43,11 +44,11 @@
                     <h3 style="color: #ff2a6d; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-top: 10px;">⚽ Pong (Punti)</h3>
                     <p>Dilett.: <strong id="lb-pong-easy" class="highlight">0</strong> | Serie A: <strong id="lb-pong-med" class="highlight">0</strong> | Legg.: <strong id="lb-pong-hard" class="highlight">0</strong></p>
                     <h3 style="color: #ffab00; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-top: 10px;">❌ Tris (Vittorie)</h3>
-                    <p>Polpo: <strong id="lb-tris-p1" class="highlight">0</strong> | Granchio: <strong id="lb-tris-p2" class="highlight">0</strong></p>
+                    <p>Polpo: <strong id="lb-tris-p1" class="highlight">0</strong> | Mago: <strong id="lb-tris-p2" class="highlight">0</strong></p>
                     <h3 style="color: #00e676; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-top: 10px;">⚓ Navale (Vittorie)</h3>
                     <p>Gioc. 1: <strong id="lb-navale-p1" class="highlight">0</strong> | Gioc. 2: <strong id="lb-navale-p2" class="highlight">0</strong></p>
                     <h3 style="color: #e040fb; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-top: 10px;">🏁 Dama (Vittorie)</h3>
-                    <p>Conchiglie: <strong id="lb-dama-p1" class="highlight">0</strong> | Stelle: <strong id="lb-dama-p2" class="highlight">0</strong></p>
+                    <p>Polpi: <strong id="lb-dama-p1" class="highlight">0</strong> | Maghi: <strong id="lb-dama-p2" class="highlight">0</strong></p>
                 </div>
             </div>
         </section>
@@ -56,24 +57,25 @@
         <section id="snake" class="view game-view">
             <header class="top-bar"><button class="back-btn"><i class="fa-solid fa-chevron-left"></i> Menu</button><h2>Polpo Snake</h2><div style="width: 70px;"></div></header>
             <div class="game-content">
-                <div class="glass-panel">
+                <div class="glass-panel" id="snake-menu-panel">
                     <select id="snake-diff" class="elegant-select"><option value="easy">Livello: Facile</option><option value="med" selected>Livello: Normale</option><option value="hard">Livello: Difficile</option></select>
-                    <button class="btn-elegant" id="start-snake">Inizia Partita</button>
+                    <button class="btn-elegant" id="start-snake">Gioca Ora</button>
                 </div>
+                
                 <div class="score-row"><div>Punti: <span id="snake-score" class="highlight">0</span></div><div>Record: <span id="snake-high">0</span></div></div>
                 
                 <div style="position: relative;">
                     <div id="snake-overlay" class="game-over-overlay">
-                        <h3>Partita Finita!</h3><p>Hai totalizzato <strong id="snake-final-score" style="color:#00e5ff; font-size: 24px;">0</strong> punti.</p>
-                        <button class="btn-elegant" id="retry-snake" style="margin-top: 15px;">Riprova</button>
+                        <h3 id="snake-overlay-title">Partita Finita!</h3><p>Hai totalizzato <strong id="snake-final-score" style="color:#00e5ff; font-size: 24px;">0</strong> punti.</p>
+                        <button class="btn-elegant" id="resume-snake" style="margin-top: 15px; display: none;">Riprendi</button>
                     </div>
-                    <canvas id="snakeCanvas" width="320" height="320"></canvas>
+                    <!-- Schermo più grande (340x340) -->
+                    <canvas id="snakeCanvas" width="340" height="340"></canvas>
                 </div>
                 
-                <!-- I NUOVI 3 TASTI -->
                 <div class="game-controls-row">
                     <button class="btn-action" id="pause-snake"><i class="fa-solid fa-pause"></i> Pausa</button>
-                    <button class="btn-action" id="restart-snake"><i class="fa-solid fa-rotate-right"></i> Ricomincia</button>
+                    <button class="btn-action" id="restart-snake"><i class="fa-solid fa-rotate-right"></i> Riavvia</button>
                     <button class="btn-action" id="end-snake"><i class="fa-solid fa-flag-checkered"></i> Termina</button>
                 </div>
 
@@ -88,45 +90,45 @@
 
         <!-- PONG -->
         <section id="pong" class="view game-view">
-            <header class="top-bar"><button class="back-btn"><i class="fa-solid fa-chevron-left"></i> Menu</button><h2>Dybala Pong</h2><div style="width: 70px;"></div></header>
+            <header class="top-bar"><button class="back-btn"><i class="fa-solid fa-chevron-left"></i> Menu</button><h2>Calcio Pong</h2><div style="width: 70px;"></div></header>
             <div class="game-content">
-                <div class="glass-panel">
+                <div class="glass-panel" id="pong-menu-panel">
                     <select id="pong-diff" class="elegant-select"><option value="easy">Livello: Principiante</option><option value="med" selected>Livello: Serie A</option><option value="hard">Livello: Campione</option></select>
                     <button class="btn-elegant" id="start-pong">Calcio d'inizio</button>
                 </div>
-                <div class="score-row"><div>Dybala: <span id="pong-score-p1" class="highlight">0</span></div><div>CPU: <span id="pong-score-cpu">0</span></div></div>
+                
+                <div class="score-row"><div>Giocatore: <span id="pong-score-p1" class="highlight">0</span></div><div>CPU: <span id="pong-score-cpu">0</span></div></div>
                 
                 <div style="position: relative;">
                     <div id="pong-overlay" class="game-over-overlay">
-                        <h3 id="pong-final-text">Partita Terminata</h3>
-                        <button class="btn-elegant" id="resume-pong" style="margin-top: 15px;">Nuova Partita</button>
+                        <h3 id="pong-overlay-title">Partita Terminata</h3>
+                        <button class="btn-elegant" id="resume-pong" style="margin-top: 15px; display: none;">Riprendi</button>
                     </div>
-                    <canvas id="pongCanvas" width="320" height="420"></canvas>
+                    <!-- Schermo allargato (340x440) -->
+                    <canvas id="pongCanvas" width="340" height="440"></canvas>
                 </div>
                 
-                <!-- I NUOVI 3 TASTI -->
-                <div class="game-controls-row" style="margin-top:10px;">
+                <div class="game-controls-row">
                     <button class="btn-action" id="pause-pong"><i class="fa-solid fa-pause"></i> Pausa</button>
-                    <button class="btn-action" id="restart-pong"><i class="fa-solid fa-rotate-right"></i> Ricomincia</button>
+                    <button class="btn-action" id="restart-pong"><i class="fa-solid fa-rotate-right"></i> Riavvia</button>
                     <button class="btn-action" id="end-pong"><i class="fa-solid fa-flag-checkered"></i> Termina</button>
                 </div>
-                
-                <p class="hint">Scorri il dito sul campo per muovere Dybala in basso</p>
+                <p class="hint">Scorri sul campo per muovere il tuo Giocatore</p>
             </div>
         </section>
 
         <!-- TRIS -->
         <section id="tris" class="view game-view">
-            <header class="top-bar"><button class="back-btn"><i class="fa-solid fa-chevron-left"></i> Menu</button><h2>Tris Oceanico</h2><div style="width: 70px;"></div></header>
+            <header class="top-bar"><button class="back-btn"><i class="fa-solid fa-chevron-left"></i> Menu</button><h2>Tris Magico</h2><div style="width: 70px;"></div></header>
             <div class="game-content">
-                <div class="score-row"><div>Polpo: <span id="tris-score-p1" class="highlight">0</span></div><div>Granchio: <span id="tris-score-p2" class="highlight">0</span></div></div>
+                <div class="score-row"><div>Polpo: <span id="tris-score-p1" class="highlight">0</span></div><div>Mago: <span id="tris-score-p2" class="highlight">0</span></div></div>
                 <div class="turn-indicator" id="tris-status">Tocca a: 🐙 Polpo</div>
                 <div class="board tris-board" id="tris-board">
                     <div class="cell" data-index="0"></div><div class="cell" data-index="1"></div><div class="cell" data-index="2"></div>
                     <div class="cell" data-index="3"></div><div class="cell" data-index="4"></div><div class="cell" data-index="5"></div>
                     <div class="cell" data-index="6"></div><div class="cell" data-index="7"></div><div class="cell" data-index="8"></div>
                 </div>
-                <button class="btn-elegant" id="reset-tris" style="margin-top: 20px;">Ricomincia</button>
+                <button class="btn-elegant" id="reset-tris" style="margin-top: 20px;">Ricomincia Partita</button>
             </div>
         </section>
 
@@ -140,7 +142,7 @@
                     <div id="navale-overlay" class="overlay-pass"><h3 id="navale-overlay-title">Passa il Telefono!</h3><button class="btn-elegant" id="btn-navale-ready">Fatto</button></div>
                     <div class="board navale-board" id="board-navale"></div>
                 </div>
-                <button class="btn-elegant outline" id="reset-navale" style="margin-top: 20px;">Nuova Partita</button>
+                <button class="btn-elegant outline" id="reset-navale" style="margin-top: 20px;">Termina e Riavvia</button>
             </div>
         </section>
 
@@ -148,8 +150,9 @@
         <section id="dama" class="view game-view">
             <header class="top-bar"><button class="back-btn"><i class="fa-solid fa-chevron-left"></i> Menu</button><h2>Dama Marina</h2><div style="width: 70px;"></div></header>
             <div class="game-content">
-                <div class="score-row"><div>🐚: <span id="dama-score-p1" class="highlight">12</span></div><div>⭐: <span id="dama-score-p2" class="highlight">12</span></div></div>
-                <div class="turn-indicator" id="dama-status">Tocca alle Conchiglie 🐚</div>
+                <!-- Mostra "Mangiate" -->
+                <div class="score-row"><div>Maghi mangiati: <span id="dama-cap-p1" class="highlight" style="color:#00e5ff;">0</span></div><div>Polpi mangiati: <span id="dama-cap-p2" class="highlight" style="color:#ff2a6d;">0</span></div></div>
+                <div class="turn-indicator" id="dama-status" style="margin-bottom: 15px;">Tocca ai Polpi 🐙</div>
                 <div class="dama-wrapper">
                     <div id="dama-overlay" class="overlay-pass"><h3 id="dama-overlay-title">Fine Partita!</h3><button class="btn-elegant" id="retry-dama">Nuova Partita</button></div>
                     <div class="board dama-board" id="dama-board"></div>
@@ -160,9 +163,6 @@
 
     </div>
     <script src="app.js"></script>
-    <script>
-        // Avvia il service worker per la PWA
-        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-    </script>
+    <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 </body>
 </html>
