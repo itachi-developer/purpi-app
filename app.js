@@ -8,7 +8,6 @@ function applyTheme() {
 }
 applyTheme(); setInterval(applyTheme, 60000);
 
-// FIX BUG: Se esci dall'app (WhatsApp, home telefono) mette in pausa!
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
         if (isSnakeActive && !isSnakePaused) document.getElementById('pause-snake').click();
@@ -46,17 +45,8 @@ document.querySelectorAll('.open-game').forEach(btn => {
         document.getElementById(target).classList.add('active');
         isSnakeActive = false; isPongActive = false;
         
-        if(target === 'snake') { 
-            document.getElementById('snake-score').innerText = '0'; 
-            document.getElementById('snake-high').innerText = scores.snake[document.getElementById('snake-diff').value]; 
-            document.getElementById('snake-overlay').style.display = 'none'; 
-            document.getElementById('snake-menu-panel').style.display = 'flex';
-        }
-        if(target === 'pong') { 
-            document.getElementById('pong-score-p1').innerText = '0'; document.getElementById('pong-score-cpu').innerText = '0';
-            document.getElementById('pong-overlay').style.display = 'none';
-            document.getElementById('pong-menu-panel').style.display = 'flex';
-        }
+        if(target === 'snake') { document.getElementById('snake-score').innerText = '0'; document.getElementById('snake-high').innerText = scores.snake[document.getElementById('snake-diff').value]; document.getElementById('snake-overlay').style.display = 'none'; document.getElementById('snake-menu-panel').style.display = 'flex'; }
+        if(target === 'pong') { document.getElementById('pong-score-p1').innerText = '0'; document.getElementById('pong-score-cpu').innerText = '0'; document.getElementById('pong-overlay').style.display = 'none'; document.getElementById('pong-menu-panel').style.display = 'flex'; }
     });
 });
 
@@ -69,10 +59,10 @@ document.querySelectorAll('.back-btn').forEach(btn => {
 });
 
 // ==========================================
-// 3. POLPO SNAKE (Grafica Gigante & Polizia)
+// 3. POLPO SNAKE
 // ==========================================
 const snakeCanvas = document.getElementById('snakeCanvas'); const sCtx = snakeCanvas.getContext('2d');
-const gridSize = 20; const tileCount = 17; // 340 / 20 = 17
+const gridSize = 20; const tileCount = 17; 
 let snake = [], dx = 0, dy = 0, foodX, foodY, rocks = [], snakeScore = 0, currentDiffS = 'med', gameSpeed = 120, lastRenderTime = 0;
 
 function initSnake() {
@@ -100,39 +90,27 @@ document.getElementById('restart-snake').addEventListener('click', () => { if(is
 document.getElementById('resume-snake').addEventListener('click', () => { isSnakePaused = false; document.getElementById('snake-overlay').style.display = 'none'; document.getElementById('pause-snake').innerHTML = '<i class="fa-solid fa-pause"></i> Pausa'; });
 
 document.getElementById('pause-snake').addEventListener('click', () => {
-    if(!isSnakeActive && !isSnakePaused) return;
-    isSnakePaused = true;
-    document.getElementById('snake-overlay-title').innerText = "In Pausa";
-    document.getElementById('snake-final-score').innerText = snakeScore;
-    document.getElementById('resume-snake').style.display = 'block';
-    document.getElementById('snake-overlay').style.display = 'flex';
+    if(!isSnakeActive && !isSnakePaused) return; isSnakePaused = true;
+    document.getElementById('snake-overlay-title').innerText = "In Pausa"; document.getElementById('snake-final-score').innerText = snakeScore;
+    document.getElementById('resume-snake').style.display = 'block'; document.getElementById('snake-overlay').style.display = 'flex';
 });
 
 document.getElementById('end-snake').addEventListener('click', () => {
-    if(!isSnakeActive && !isSnakePaused) return;
-    isSnakeActive = false; isSnakePaused = false;
-    document.getElementById('snake-overlay-title').innerText = "Partita Terminata";
-    document.getElementById('snake-final-score').innerText = snakeScore;
-    document.getElementById('resume-snake').style.display = 'none';
-    document.getElementById('snake-overlay').style.display = 'flex';
+    if(!isSnakeActive && !isSnakePaused) return; isSnakeActive = false; isSnakePaused = false;
+    document.getElementById('snake-overlay-title').innerText = "Partita Terminata"; document.getElementById('snake-final-score').innerText = snakeScore;
+    document.getElementById('resume-snake').style.display = 'none'; document.getElementById('snake-overlay').style.display = 'flex';
 });
 
-function placeFoodS() {
-    let valid = false;
-    while(!valid) { foodX = Math.floor(Math.random()*tileCount); foodY = Math.floor(Math.random()*tileCount); valid = !rocks.some(r => r.x===foodX && r.y===foodY) && !snake.some(s => s.x===foodX && s.y===foodY); }
-}
+function placeFoodS() { let valid=false; while(!valid) { foodX=Math.floor(Math.random()*tileCount); foodY=Math.floor(Math.random()*tileCount); valid = !rocks.some(r=>r.x===foodX&&r.y===foodY)&&!snake.some(s=>s.x===foodX&&s.y===foodY); } }
 
 function snakeLoop(timestamp) {
-    if (!isSnakeActive) return; 
-    snakeAnimReq = window.requestAnimationFrame(snakeLoop);
+    if (!isSnakeActive) return; snakeAnimReq = window.requestAnimationFrame(snakeLoop);
     if (isSnakePaused) return; 
     if (timestamp - lastRenderTime < gameSpeed) return; lastRenderTime = timestamp;
     if (dx === 0 && dy === 0) { drawSnakeMap(); return; }
     
     const head = { x: snake[0].x + dx, y: snake[0].y + dy };
-    if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount || snake.some(p => p.x===head.x && p.y===head.y) || rocks.some(r => r.x===head.x && r.y===head.y)) {
-        document.getElementById('end-snake').click(); return; // Innesca la fine
-    }
+    if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount || snake.some(p => p.x===head.x && p.y===head.y) || rocks.some(r => r.x===head.x && r.y===head.y)) { document.getElementById('end-snake').click(); return; }
     snake.unshift(head);
     if (head.x === foodX && head.y === foodY) {
         snakeScore += 10; document.getElementById('snake-score').innerText = snakeScore;
@@ -144,8 +122,7 @@ function snakeLoop(timestamp) {
 
 function drawSnakeMap() {
     sCtx.clearRect(0, 0, snakeCanvas.width, snakeCanvas.height); sCtx.font = "20px Arial";
-    rocks.forEach(r => sCtx.fillText('👮', r.x * gridSize - 2, r.y * gridSize + 16)); 
-    sCtx.fillText('🚬', foodX * gridSize - 2, foodY * gridSize + 16);
+    rocks.forEach(r => sCtx.fillText('👮', r.x * gridSize - 2, r.y * gridSize + 16)); sCtx.fillText('🚬', foodX * gridSize - 2, foodY * gridSize + 16);
     snake.forEach((part, i) => { if (i === 0) sCtx.fillText('🐙', part.x*gridSize-2, part.y*gridSize+16); else { sCtx.fillStyle = '#00e5ff'; sCtx.beginPath(); sCtx.arc(part.x*gridSize+gridSize/2, part.y*gridSize+gridSize/2, gridSize/2.2, 0, Math.PI*2); sCtx.fill(); } });
 }
 function sDir(ndx, ndy) { if(dx!==0 && ndx!==0) return; if(dy!==0 && ndy!==0) return; dx=ndx; dy=ndy; }
@@ -168,48 +145,29 @@ function initPong() {
     pongDiff = document.getElementById('pong-diff').value; giocatore.score = 0; cpu.score = 0; 
     document.getElementById('pong-score-p1').innerText = 0; document.getElementById('pong-score-cpu').innerText = 0;
     isPongActive = true; isPongPaused = false;
-    document.getElementById('pause-pong').innerHTML = '<i class="fa-solid fa-pause"></i> Pausa';
-    document.getElementById('pong-overlay').style.display = 'none';
+    document.getElementById('pause-pong').innerHTML = '<i class="fa-solid fa-pause"></i> Pausa'; document.getElementById('pong-overlay').style.display = 'none';
     resetSoccerBall(); pongAnimReq = window.requestAnimationFrame(pongLoop);
 }
 
 document.getElementById('start-pong').addEventListener('click', initPong);
 document.getElementById('restart-pong').addEventListener('click', () => { if(isPongActive || document.getElementById('pong-overlay').style.display === 'flex' || isPongPaused) initPong(); });
+document.getElementById('resume-pong').addEventListener('click', () => { isPongPaused = false; document.getElementById('pong-overlay').style.display = 'none'; });
 
 document.getElementById('pause-pong').addEventListener('click', () => {
-    if(!isPongActive && !isPongPaused) return;
-    isPongPaused = true;
+    if(!isPongActive && !isPongPaused) return; isPongPaused = true;
     document.getElementById('pong-overlay-title').innerText = "In Pausa";
     document.getElementById('resume-pong').style.display = 'block'; document.getElementById('pong-overlay').style.display = 'flex';
 });
-
-document.getElementById('resume-pong').addEventListener('click', () => {
-    isPongPaused = false; document.getElementById('pong-overlay').style.display = 'none';
-});
-
 document.getElementById('end-pong').addEventListener('click', () => {
-    if(!isPongActive && !isPongPaused) return;
-    isPongActive = false; isPongPaused = false;
+    if(!isPongActive && !isPongPaused) return; isPongActive = false; isPongPaused = false;
     document.getElementById('pong-overlay-title').innerText = `Fine! Tu: ${giocatore.score} - CPU: ${cpu.score}`;
     document.getElementById('resume-pong').style.display = 'none'; document.getElementById('pong-overlay').style.display = 'flex';
 });
 
-function resetSoccerBall() {
-    ball.x = pCanvas.width/2; ball.y = pCanvas.height/2; ball.dx = 0; ball.dy = 0;
-    setTimeout(() => { if(!isPongActive || isPongPaused) return; ball.dy = Math.random()>0.5 ? ball.speed : -ball.speed; ball.dx = (Math.random()*4)-2; }, 800);
-}
+function resetSoccerBall() { ball.x=pCanvas.width/2; ball.y=pCanvas.height/2; ball.dx=0; ball.dy=0; setTimeout(() => { if(!isPongActive||isPongPaused) return; ball.dy=Math.random()>0.5?ball.speed:-ball.speed; ball.dx=(Math.random()*4)-2; }, 800); }
+pCanvas.addEventListener('touchmove', e => { e.preventDefault(); if(!isPongActive||isPongPaused) return; let touchX = e.touches[0].clientX - pCanvas.getBoundingClientRect().left; giocatore.x = Math.max(0, Math.min(touchX - pw/2, pCanvas.width - pw)); }, {passive: false});
 
-pCanvas.addEventListener('touchmove', e => {
-    e.preventDefault(); if(!isPongActive || isPongPaused) return;
-    let touchX = e.touches[0].clientX - pCanvas.getBoundingClientRect().left;
-    giocatore.x = Math.max(0, Math.min(touchX - pw/2, pCanvas.width - pw));
-}, {passive: false});
-
-function pongLoop() { 
-    if(!isPongActive) return; 
-    updateSoccer(); drawSoccer(); 
-    pongAnimReq = window.requestAnimationFrame(pongLoop); 
-}
+function pongLoop() { if(!isPongActive) return; updateSoccer(); drawSoccer(); pongAnimReq = window.requestAnimationFrame(pongLoop); }
 
 function updateSoccer() {
     if(isPongPaused) return; 
@@ -219,50 +177,23 @@ function updateSoccer() {
     if (ball.dx === 0 && ball.dy === 0) return;
     ball.x += ball.dx; ball.y += ball.dy;
     
-    // FIX ANTI INCASTRO SUI LATI
-    if(ball.x - ball.r < 0) { ball.x = ball.r; ball.dx = -ball.dx; } 
-    else if(ball.x + ball.r > pCanvas.width) { ball.x = pCanvas.width - ball.r; ball.dx = -ball.dx; }
+    if(ball.x - ball.r < 0) { ball.x = ball.r; ball.dx = -ball.dx; } else if(ball.x + ball.r > pCanvas.width) { ball.x = pCanvas.width - ball.r; ball.dx = -ball.dx; }
 
-    // GOL O RIMBALZO
-    if(ball.y-ball.r < 0) {
-        if(ball.x > pCanvas.width/2-netW/2 && ball.x < pCanvas.width/2+netW/2) { giocatore.score++; document.getElementById('pong-score-p1').innerText = giocatore.score; resetSoccerBall(); }
-        else ball.dy = -ball.dy;
-    } else if (ball.y+ball.r > pCanvas.height) {
-        if(ball.x > pCanvas.width/2-netW/2 && ball.x < pCanvas.width/2+netW/2) { cpu.score++; document.getElementById('pong-score-cpu').innerText = cpu.score; resetSoccerBall(); }
-        else ball.dy = -ball.dy;
-    }
+    if(ball.y-ball.r < 0) { if(ball.x > pCanvas.width/2-netW/2 && ball.x < pCanvas.width/2+netW/2) { giocatore.score++; document.getElementById('pong-score-p1').innerText=giocatore.score; resetSoccerBall(); } else ball.dy = -ball.dy; } 
+    else if (ball.y+ball.r > pCanvas.height) { if(ball.x > pCanvas.width/2-netW/2 && ball.x < pCanvas.width/2+netW/2) { cpu.score++; document.getElementById('pong-score-cpu').innerText=cpu.score; resetSoccerBall(); } else ball.dy = -ball.dy; }
     
-    // FIX ANTI INCASTRO BARRETTE
     if(ball.dy>0 && ball.y+ball.r > giocatore.y && ball.x+ball.r > giocatore.x && ball.x-ball.r < giocatore.x+pw) { ball.y = giocatore.y - ball.r; ball.dy = -ball.speed; ball.dx = ((ball.x-(giocatore.x+pw/2))/(pw/2))*4; }
     if(ball.dy<0 && ball.y-ball.r < cpu.y+ph && ball.x+ball.r > cpu.x && ball.x-ball.r < cpu.x+pw) { ball.y = cpu.y + ph + ball.r; ball.dy = ball.speed; ball.dx = ((ball.x-(cpu.x+pw/2))/(pw/2))*4; }
 }
 
 function drawSoccer() {
     pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
-    
-    // Porte (Rete bianca)
-    pCtx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-    pCtx.fillRect(pCanvas.width/2-netW/2, 0, netW, 40); pCtx.fillRect(pCanvas.width/2-netW/2, pCanvas.height-40, netW, 40);
-    pCtx.beginPath();
-    for(let i=0; i<=netW; i+=15) { pCtx.moveTo(pCanvas.width/2-netW/2 + i, 0); pCtx.lineTo(pCanvas.width/2-netW/2 + i, 40); pCtx.moveTo(pCanvas.width/2-netW/2 + i, pCanvas.height-40); pCtx.lineTo(pCanvas.width/2-netW/2 + i, pCanvas.height); }
-    for(let j=0; j<=40; j+=15) { pCtx.moveTo(pCanvas.width/2-netW/2, j); pCtx.lineTo(pCanvas.width/2+netW/2, j); pCtx.moveTo(pCanvas.width/2-netW/2, pCanvas.height-j); pCtx.lineTo(pCanvas.width/2+netW/2, pCanvas.height-j); }
-    pCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)'; pCtx.lineWidth = 1; pCtx.stroke();
-
-    // Linee Campo Base
-    pCtx.strokeStyle = 'rgba(255,255,255,0.4)'; pCtx.lineWidth = 2;
-    pCtx.beginPath(); pCtx.moveTo(0, pCanvas.height/2); pCtx.lineTo(pCanvas.width, pCanvas.height/2); pCtx.stroke();
-    pCtx.beginPath(); pCtx.arc(pCanvas.width/2, pCanvas.height/2, 30, 0, Math.PI*2); pCtx.stroke();
-    pCtx.strokeRect(pCanvas.width/2-netW/2, 0, netW, 40); pCtx.strokeRect(pCanvas.width/2-netW/2, pCanvas.height-40, netW, 40);
-
+    pCtx.fillStyle = 'rgba(255, 255, 255, 0.15)'; pCtx.fillRect(pCanvas.width/2-netW/2, 0, netW, 40); pCtx.fillRect(pCanvas.width/2-netW/2, pCanvas.height-40, netW, 40);
+    pCtx.beginPath(); for(let i=0; i<=netW; i+=15) { pCtx.moveTo(pCanvas.width/2-netW/2+i, 0); pCtx.lineTo(pCanvas.width/2-netW/2+i, 40); pCtx.moveTo(pCanvas.width/2-netW/2+i, pCanvas.height-40); pCtx.lineTo(pCanvas.width/2-netW/2+i, pCanvas.height); } for(let j=0; j<=40; j+=15) { pCtx.moveTo(pCanvas.width/2-netW/2, j); pCtx.lineTo(pCanvas.width/2+netW/2, j); pCtx.moveTo(pCanvas.width/2-netW/2, pCanvas.height-j); pCtx.lineTo(pCanvas.width/2+netW/2, pCanvas.height-j); } pCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)'; pCtx.lineWidth = 1; pCtx.stroke();
+    pCtx.strokeStyle = 'rgba(255,255,255,0.4)'; pCtx.lineWidth = 2; pCtx.beginPath(); pCtx.moveTo(0, pCanvas.height/2); pCtx.lineTo(pCanvas.width, pCanvas.height/2); pCtx.stroke(); pCtx.beginPath(); pCtx.arc(pCanvas.width/2, pCanvas.height/2, 30, 0, Math.PI*2); pCtx.stroke(); pCtx.strokeRect(pCanvas.width/2-netW/2, 0, netW, 40); pCtx.strokeRect(pCanvas.width/2-netW/2, pCanvas.height-40, netW, 40);
     let halfW = pw / 2;
-    // Giocatore (Bianconero)
-    pCtx.fillStyle = '#ffffff'; pCtx.fillRect(giocatore.x, giocatore.y, halfW, ph);
-    pCtx.fillStyle = '#111111'; pCtx.fillRect(giocatore.x + halfW, giocatore.y, halfW, ph);
-    
-    // CPU (Rossoblu)
-    pCtx.fillStyle = '#b30000'; pCtx.fillRect(cpu.x, cpu.y, halfW, ph);
-    pCtx.fillStyle = '#000066'; pCtx.fillRect(cpu.x + halfW, cpu.y, halfW, ph);
-    
+    pCtx.fillStyle = '#ffffff'; pCtx.fillRect(giocatore.x, giocatore.y, halfW, ph); pCtx.fillStyle = '#111111'; pCtx.fillRect(giocatore.x+halfW, giocatore.y, halfW, ph);
+    pCtx.fillStyle = '#b30000'; pCtx.fillRect(cpu.x, cpu.y, halfW, ph); pCtx.fillStyle = '#000066'; pCtx.fillRect(cpu.x+halfW, cpu.y, halfW, ph);
     pCtx.font = "18px Arial"; pCtx.fillText('⚽', ball.x-10, ball.y+6);
 }
 
@@ -301,16 +232,109 @@ function shoot(idx,grid,rev){ if(isNavaleOver||rev[idx]) return; rev[idx]=true; 
 document.getElementById('btn-navale-ready').addEventListener('click', ()=>{document.getElementById('navale-overlay').style.display='none'; drawNavale();}); document.getElementById('reset-navale').addEventListener('click', initNavale); initNavale();
 
 // ==========================================
-// 7. DAMA (Polpi vs Maghi & Conteggio Mangiate)
+// 7. DAMA UFFICIALE (Obbligo Salto + Dame)
 // ==========================================
-let dGrid=[], turnD=1, selPos=null, p1Pieces=12, p2Pieces=12, isDamaActive=true;
+let dGrid=[], turnD=1, selPos=null, p1Pieces=12, p2Pieces=12, isDamaActive=true, mustJumpPiece=null;
 
-function initDama() { dGrid=Array(64).fill(0); turnD=1; selPos=null; p1Pieces=12; p2Pieces=12; isDamaActive=true; document.getElementById('dama-overlay').style.display='none'; for(let r=0;r<8;r++) for(let c=0;c<8;c++) if((r+c)%2!==0){ if(r<3) dGrid[r*8+c]=1; else if(r>4) dGrid[r*8+c]=2; } updateDScore(); drawDama(); }
-function updateDScore() { 
-    document.getElementById('dama-cap-p1').innerText = 12 - p2Pieces; // Maghi mangiati
-    document.getElementById('dama-cap-p2').innerText = 12 - p1Pieces; // Polpi mangiati
-    document.getElementById('dama-status').innerText=`Tocca a: ${turnD===1?'🐙 Polpi':'🧙‍♂️ Maghi'}`; 
+function initDama() { dGrid=Array(64).fill(0); turnD=1; selPos=null; mustJumpPiece=null; p1Pieces=12; p2Pieces=12; isDamaActive=true; document.getElementById('dama-overlay').style.display='none'; for(let r=0;r<8;r++) for(let c=0;c<8;c++) if((r+c)%2!==0){ if(r<3) dGrid[r*8+c]=1; else if(r>4) dGrid[r*8+c]=2; } updateDScore(); drawDama(); }
+function updateDScore() { document.getElementById('dama-cap-p1').innerText=12-p2Pieces; document.getElementById('dama-cap-p2').innerText=12-p1Pieces; document.getElementById('dama-status').style.color = turnD===1?'#00e5ff':'#ff2a6d'; document.getElementById('dama-status').innerText=`Tocca a: ${turnD===1?'🐙 Polpi':'🧙‍♂️ Maghi'}`; }
+
+function isEnemy(p, target) { if(target===0) return false; let c1 = (p===1||p===3)?1:2; let c2 = (target===1||target===3)?1:2; return c1!==c2; }
+function isKing(p) { return p===3||p===4; }
+
+function getJumps(idx, grid) {
+    let jumps = []; let p = grid[idx]; if(p===0) return jumps;
+    let r = Math.floor(idx/8), c = idx%8; let dirs = [];
+    if(p===1 || isKing(p)) dirs.push([1,-1], [1,1]); // Giù
+    if(p===2 || isKing(p)) dirs.push([-1,-1], [-1,1]); // Su
+    
+    for(let d of dirs) {
+        let r1 = r+d[0], c1 = c+d[1], r2 = r+d[0]*2, c2 = c+d[1]*2;
+        if(r2>=0 && r2<8 && c2>=0 && c2<8) {
+            let mIdx = r1*8+c1, eIdx = r2*8+c2; let midP = grid[mIdx];
+            if(isEnemy(p, midP) && grid[eIdx]===0) {
+                if((p===1||p===2) && isKing(midP)) continue; // Pedina non mangia Dama
+                jumps.push({to: eIdx, mid: mIdx});
+            }
+        }
+    } return jumps;
 }
-function drawDama() { const b=document.getElementById('dama-board'); b.innerHTML=''; for(let i=0;i<64;i++){ let div=document.createElement('div'); let r=Math.floor(i/8), c=i%8; div.className=`dama-cell ${(r+c)%2===0?'white':'black'}`; if(selPos===i) div.classList.add('selected'); if(dGrid[i]!==0){ let p=document.createElement('div'); p.className='piece'; p.innerText=dGrid[i]===1?'🐙':'🧙‍♂️'; div.appendChild(p); } div.addEventListener('click',()=>handleDamaClick(i)); b.appendChild(div); } }
-function handleDamaClick(idx) { if(!isDamaActive) return; let r=Math.floor(idx/8), c=idx%8; if((r+c)%2===0) return; if(selPos===null){ if(dGrid[idx]===turnD){ selPos=idx; drawDama(); } } else{ if(selPos===idx){ selPos=null; drawDama(); return; } let sr=Math.floor(selPos/8), sc=selPos%8, dr=r-sr, dc=Math.abs(c-sc), dir=turnD===1?1:-1; if(dr===dir && dc===1 && dGrid[idx]===0){ dGrid[idx]=turnD; dGrid[selPos]=0; turnD=turnD===1?2:1; selPos=null; } else if(dr===dir*2 && dc===2 && dGrid[idx]===0){ let midIdx=(sr+dir)*8 + (c>sc?sc+1:sc-1); if(dGrid[midIdx]!==0 && dGrid[midIdx]!==turnD){ dGrid[idx]=turnD; dGrid[selPos]=0; dGrid[midIdx]=0; turnD===1?p2Pieces--:p1Pieces--; turnD=turnD===1?2:1; selPos=null; } else selPos=null; } else selPos=null; updateDScore(); drawDama(); if(p1Pieces===0||p2Pieces===0){ isDamaActive=false; let vince=p1Pieces===0?"Maghi 🧙‍♂️":"Polpi 🐙"; if(p1Pieces===0) scores.dama.p2++; else scores.dama.p1++; saveScores(); document.getElementById('dama-overlay-title').innerText=`Fine Partita!\nVince: ${vince}`; document.getElementById('dama-overlay').style.display='flex'; } } }
+function getMoves(idx, grid) {
+    let moves = []; let p = grid[idx]; if(p===0) return moves;
+    let r = Math.floor(idx/8), c = idx%8; let dirs = [];
+    if(p===1 || isKing(p)) dirs.push([1,-1], [1,1]);
+    if(p===2 || isKing(p)) dirs.push([-1,-1], [-1,1]);
+    for(let d of dirs) { let r1 = r+d[0], c1 = c+d[1]; if(r1>=0 && r1<8 && c1>=0 && c1<8) { let eIdx = r1*8+c1; if(grid[eIdx]===0) moves.push({to: eIdx}); } }
+    return moves;
+}
+function getAllJumps(player, grid) {
+    let all = [];
+    for(let i=0; i<64; i++) { let p = grid[i]; if((player===1 && (p===1||p===3)) || (player===2 && (p===2||p===4))) { let j = getJumps(i, grid); if(j.length>0) all.push({from: i, jumps: j}); } } return all;
+}
+
+function drawDama() {
+    const b = document.getElementById('dama-board'); b.innerHTML='';
+    let allJumps = getAllJumps(turnD, dGrid); let mandSources = allJumps.map(j=>j.from);
+    let valids = []; if(selPos!==null) { valids = getJumps(selPos, dGrid).map(j=>j.to); if(valids.length===0 && mustJumpPiece===null) valids = getMoves(selPos, dGrid).map(m=>m.to); }
+
+    for(let i=0;i<64;i++){
+        let div=document.createElement('div'); let r=Math.floor(i/8), c=i%8; div.className=`dama-cell ${(r+c)%2===0?'white':'black'}`;
+        if(selPos===i) div.classList.add('selected');
+        if(valids.includes(i)) div.classList.add('valid-move');
+        if(selPos===null && mandSources.includes(i)) div.classList.add('must-jump');
+
+        if(dGrid[i]!==0){ let p=document.createElement('div'); p.className='piece'; if(isKing(dGrid[i])) p.classList.add('king'); p.innerText=(dGrid[i]===1||dGrid[i]===3)?'🐙':'🧙‍♂️'; div.appendChild(p); }
+        div.addEventListener('click',()=>handleDamaClick(i)); b.appendChild(div);
+    }
+}
+
+function handleDamaClick(idx) {
+    if(!isDamaActive) return; let r=Math.floor(idx/8), c=idx%8; if((r+c)%2===0) return;
+    let possibleJumps = getAllJumps(turnD, dGrid); let hasJumps = possibleJumps.length > 0;
+    
+    if(selPos===null) {
+        let p = dGrid[idx]; let isOwner = (turnD===1 && (p===1||p===3)) || (turnD===2 && (p===2||p===4));
+        if(isOwner) {
+            if(hasJumps && !possibleJumps.some(j=>j.from===idx)) { document.getElementById('dama-status').innerText = "Devi mangiare! 🛑"; return; }
+            selPos=idx; drawDama();
+        }
+    } else {
+        if(selPos===idx && mustJumpPiece===null) { selPos=null; updateDScore(); drawDama(); return; }
+        let jList = getJumps(selPos, dGrid); let isJump = jList.find(j=>j.to===idx);
+        let mList = getMoves(selPos, dGrid); let isMove = mList.find(m=>m.to===idx);
+        
+        if(isJump) {
+            let p = dGrid[selPos]; dGrid[idx] = p; dGrid[selPos] = 0; dGrid[isJump.mid] = 0;
+            turnD===1 ? p2Pieces-- : p1Pieces--;
+            
+            let promoted = false; let rT = Math.floor(idx/8);
+            if(p===1 && rT===7) { dGrid[idx] = 3; promoted=true; }
+            if(p===2 && rT===0) { dGrid[idx] = 4; promoted=true; }
+            
+            let nextJumps = promoted ? [] : getJumps(idx, dGrid);
+            if(nextJumps.length > 0) { selPos = idx; mustJumpPiece = idx; document.getElementById('dama-status').innerText = "Doppio salto! ⚔️"; drawDama(); return; } 
+            else endDamaTurn();
+        } 
+        else if(isMove && !hasJumps && mustJumpPiece===null) {
+            let p = dGrid[selPos]; dGrid[idx] = p; dGrid[selPos] = 0;
+            let rT = Math.floor(idx/8); if(p===1 && rT===7) dGrid[idx]=3; if(p===2 && rT===0) dGrid[idx]=4;
+            endDamaTurn();
+        } else { if(hasJumps) document.getElementById('dama-status').innerText = "Devi mangiare! 🛑"; }
+    }
+}
+
+function endDamaTurn() {
+    selPos=null; mustJumpPiece=null; turnD = turnD===1?2:1; updateDScore(); drawDama();
+    if(p1Pieces===0||p2Pieces===0) {
+        isDamaActive=false; let vince=p1Pieces===0?"Maghi 🧙‍♂️":"Polpi 🐙"; if(p1Pieces===0) scores.dama.p2++; else scores.dama.p1++; saveScores(); 
+        document.getElementById('dama-overlay-title').innerText=`Fine Partita!\nVince: ${vince}`; document.getElementById('dama-overlay').style.display='flex';
+    } else {
+        let jumps = getAllJumps(turnD, dGrid); let moves = [];
+        for(let i=0;i<64;i++) { let p=dGrid[i]; if((turnD===1&&(p===1||p===3)) || (turnD===2&&(p===2||p===4))) moves = moves.concat(getMoves(i, dGrid)); }
+        if(jumps.length===0 && moves.length===0) {
+            isDamaActive=false; let vince=turnD===1?"Maghi 🧙‍♂️":"Polpi 🐙"; if(turnD===1) scores.dama.p2++; else scores.dama.p1++; saveScores();
+            document.getElementById('dama-overlay-title').innerText=`Senza Mosse!\nVince: ${vince}`; document.getElementById('dama-overlay').style.display='flex';
+        }
+    }
+}
 document.getElementById('reset-dama').addEventListener('click', initDama); document.getElementById('retry-dama').addEventListener('click', initDama); initDama();
