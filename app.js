@@ -1,6 +1,27 @@
 // ==========================================
-// 0. TEMA AUTOMATICO E SICUREZZA USCITA APP
+// 0. NOMI GIOCATORI E TEMA
 // ==========================================
+let playerName1 = localStorage.getItem('octoName1') || 'Giocatore 1';
+let playerName2 = localStorage.getItem('octoName2') || 'Giocatore 2';
+
+const inputP1 = document.getElementById('input-p1');
+const inputP2 = document.getElementById('input-p2');
+inputP1.value = playerName1 !== 'Giocatore 1' ? playerName1 : '';
+inputP2.value = playerName2 !== 'Giocatore 2' ? playerName2 : '';
+
+function updateNames() {
+    playerName1 = inputP1.value.trim() || 'Giocatore 1';
+    playerName2 = inputP2.value.trim() || 'Giocatore 2';
+    localStorage.setItem('octoName1', playerName1);
+    localStorage.setItem('octoName2', playerName2);
+    
+    document.querySelectorAll('.name-p1').forEach(el => el.innerText = playerName1);
+    document.querySelectorAll('.name-p2').forEach(el => el.innerText = playerName2);
+}
+inputP1.addEventListener('input', updateNames);
+inputP2.addEventListener('input', updateNames);
+updateNames(); // Inizializza su tutto il sito
+
 function applyTheme() {
     const hour = new Date().getHours();
     if (hour >= 6 && hour < 20) document.body.classList.add('light-theme');
@@ -49,7 +70,6 @@ document.querySelectorAll('.open-game').forEach(btn => {
         if(target === 'pong') { document.getElementById('pong-score-p1').innerText = '0'; document.getElementById('pong-score-cpu').innerText = '0'; document.getElementById('pong-overlay').style.display = 'none'; document.getElementById('pong-menu-panel').style.display = 'flex'; }
     });
 });
-
 document.querySelectorAll('.back-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         isSnakeActive = false; isPongActive = false;
@@ -59,10 +79,10 @@ document.querySelectorAll('.back-btn').forEach(btn => {
 });
 
 // ==========================================
-// 3. POLPO SNAKE
+// 3. POLPO SNAKE (Griglia allargata + Polizia/Sigarette)
 // ==========================================
 const snakeCanvas = document.getElementById('snakeCanvas'); const sCtx = snakeCanvas.getContext('2d');
-const gridSize = 20; const tileCount = 17; 
+const gridSize = 17; const tileCount = 20; // 17*20 = 340px (Campo più largo, griglia fine)
 let snake = [], dx = 0, dy = 0, foodX, foodY, rocks = [], snakeScore = 0, currentDiffS = 'med', gameSpeed = 120, lastRenderTime = 0;
 
 function initSnake() {
@@ -70,7 +90,7 @@ function initSnake() {
     currentDiffS = document.getElementById('snake-diff').value;
     let numRocks = currentDiffS === 'easy' ? 3 : (currentDiffS === 'med' ? 8 : 15);
     gameSpeed = currentDiffS === 'easy' ? 140 : (currentDiffS === 'med' ? 100 : 70);
-    snake = [{ x: 8, y: 8 }]; dx = 0; dy = 0; snakeScore = 0; isSnakePaused = false;
+    snake = [{ x: 10, y: 10 }]; dx = 0; dy = 0; snakeScore = 0; isSnakePaused = false;
     document.getElementById('pause-snake').innerHTML = '<i class="fa-solid fa-pause"></i> Pausa';
     document.getElementById('snake-score').innerText = snakeScore;
     document.getElementById('snake-high').innerText = scores.snake[currentDiffS];
@@ -79,7 +99,7 @@ function initSnake() {
     rocks = [];
     for(let i=0; i<numRocks; i++) {
         let rx, ry, isValid = false;
-        while(!isValid) { rx=Math.floor(Math.random()*tileCount); ry=Math.floor(Math.random()*tileCount); if(!(rx>4 && rx<12 && ry>4 && ry<12)) isValid = true; }
+        while(!isValid) { rx=Math.floor(Math.random()*tileCount); ry=Math.floor(Math.random()*tileCount); if(!(rx>5 && rx<15 && ry>5 && ry<15)) isValid = true; }
         rocks.push({x: rx, y: ry});
     }
     placeFoodS(); isSnakeActive = true; snakeAnimReq = window.requestAnimationFrame(snakeLoop);
@@ -121,9 +141,19 @@ function snakeLoop(timestamp) {
 }
 
 function drawSnakeMap() {
-    sCtx.clearRect(0, 0, snakeCanvas.width, snakeCanvas.height); sCtx.font = "20px Arial";
-    rocks.forEach(r => sCtx.fillText('👮', r.x * gridSize - 2, r.y * gridSize + 16)); sCtx.fillText('🚬', foodX * gridSize - 2, foodY * gridSize + 16);
-    snake.forEach((part, i) => { if (i === 0) sCtx.fillText('🐙', part.x*gridSize-2, part.y*gridSize+16); else { sCtx.fillStyle = '#00e5ff'; sCtx.beginPath(); sCtx.arc(part.x*gridSize+gridSize/2, part.y*gridSize+gridSize/2, gridSize/2.2, 0, Math.PI*2); sCtx.fill(); } });
+    sCtx.clearRect(0, 0, snakeCanvas.width, snakeCanvas.height);
+    // Griglia
+    sCtx.strokeStyle = 'rgba(255,255,255,0.05)'; sCtx.lineWidth = 1;
+    for(let i=0; i<tileCount; i++){ for(let j=0; j<tileCount; j++){ sCtx.strokeRect(i*gridSize, j*gridSize, gridSize, gridSize); } }
+    
+    // Disegno perfettamente centrato
+    sCtx.textAlign = "center"; sCtx.textBaseline = "middle"; sCtx.font = "14px Arial";
+    rocks.forEach(r => sCtx.fillText('👮', r.x * gridSize + gridSize/2, r.y * gridSize + gridSize/2)); 
+    sCtx.fillText('🚬', foodX * gridSize + gridSize/2, foodY * gridSize + gridSize/2);
+    snake.forEach((part, i) => { 
+        if (i === 0) sCtx.fillText('🐙', part.x*gridSize + gridSize/2, part.y*gridSize + gridSize/2); 
+        else { sCtx.fillStyle = '#00e5ff'; sCtx.beginPath(); sCtx.arc(part.x*gridSize+gridSize/2, part.y*gridSize+gridSize/2, gridSize/2.5, 0, Math.PI*2); sCtx.fill(); } 
+    });
 }
 function sDir(ndx, ndy) { if(dx!==0 && ndx!==0) return; if(dy!==0 && ndy!==0) return; dx=ndx; dy=ndy; }
 ['click', 'touchstart'].forEach(evt => {
@@ -194,35 +224,41 @@ function drawSoccer() {
     let halfW = pw / 2;
     pCtx.fillStyle = '#ffffff'; pCtx.fillRect(giocatore.x, giocatore.y, halfW, ph); pCtx.fillStyle = '#111111'; pCtx.fillRect(giocatore.x+halfW, giocatore.y, halfW, ph);
     pCtx.fillStyle = '#b30000'; pCtx.fillRect(cpu.x, cpu.y, halfW, ph); pCtx.fillStyle = '#000066'; pCtx.fillRect(cpu.x+halfW, cpu.y, halfW, ph);
-    pCtx.font = "18px Arial"; pCtx.fillText('⚽', ball.x-10, ball.y+6);
+    pCtx.textAlign = "center"; pCtx.textBaseline = "middle"; pCtx.font = "18px Arial"; pCtx.fillText('⚽', ball.x, ball.y);
 }
 
 // ==========================================
-// 5. TRIS MAGICO
+// 5. TRIS MAGICO E RITIRO
 // ==========================================
 const tCells = document.querySelectorAll('.tris-board .cell'); const tStatus = document.getElementById('tris-status');
 let tBoard = ['', '', '', '', '', '', '', '', '']; let isTrisActive = true; let currentTurn = '🐙';
 const winC = [ [0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6] ];
-document.getElementById('tris-score-p1').innerText = scores.tris.p1; document.getElementById('tris-score-p2').innerText = scores.tris.p2;
 
 tCells.forEach(cell => {
     cell.addEventListener('click', (e) => {
         let idx = e.target.getAttribute('data-index'); if (tBoard[idx] !== '' || !isTrisActive) return;
         tBoard[idx] = currentTurn; e.target.innerText = currentTurn;
         if (winC.some(c => tBoard[c[0]] && tBoard[c[0]] === tBoard[c[1]] && tBoard[c[0]] === tBoard[c[2]])) {
-            tStatus.innerText = `Fine! Vince il ${currentTurn === '🐙' ? 'Polpo 🐙' : 'Mago 🧙‍♂️'}`;
+            let winnerName = currentTurn === '🐙' ? playerName1 : playerName2;
+            tStatus.innerText = `Vince ${winnerName} ${currentTurn}!`;
             if(currentTurn === '🐙') scores.tris.p1++; else scores.tris.p2++;
-            document.getElementById('tris-score-p1').innerText = scores.tris.p1; document.getElementById('tris-score-p2').innerText = scores.tris.p2;
             saveScores(); isTrisActive = false; return;
         }
         if (!tBoard.includes('')) { tStatus.innerText = 'Pareggio!'; isTrisActive = false; return; }
-        currentTurn = currentTurn === '🐙' ? '🧙‍♂️' : '🐙'; tStatus.innerText = `Tocca a: ${currentTurn}`;
+        currentTurn = currentTurn === '🐙' ? '🧙‍♂️' : '🐙'; tStatus.innerText = `Tocca a: ${currentTurn} ${currentTurn==='🐙'?playerName1:playerName2}`;
     });
 });
-document.getElementById('reset-tris').addEventListener('click', () => { tBoard=['','','','','','','','','']; isTrisActive=true; currentTurn='🐙'; tStatus.innerText='Tocca a: 🐙'; tCells.forEach(c=>c.innerText=''); });
+document.getElementById('reset-tris').addEventListener('click', () => { tBoard=['','','','','','','','','']; isTrisActive=true; currentTurn='🐙'; tStatus.innerText=`Tocca a: 🐙 ${playerName1}`; tCells.forEach(c=>c.innerText=''); });
+document.getElementById('resign-tris').addEventListener('click', () => {
+    if(!isTrisActive) return;
+    let winner = currentTurn === '🐙' ? playerName2 : playerName1;
+    tStatus.innerText = `Ritirato! Vince ${winner}`;
+    if(currentTurn === '🐙') scores.tris.p2++; else scores.tris.p1++;
+    saveScores(); isTrisActive = false;
+});
 
 // ==========================================
-// 6. NAVALE (FIX BUG MULTI-CLIC & CONCORRENZA)
+// 6. NAVALE E RITIRO
 // ==========================================
 let p1Grid=Array(36).fill(0), p2Grid=Array(36).fill(0), p1Rev=Array(36).fill(false), p2Rev=Array(36).fill(false);
 let nTurn=1, nHits1=0, nHits2=0, nPhase='setup1', nShips=[3,2,2], cShipIdx=0, isHoriz=true, isNavaleOver=false, nWaiting=false;
@@ -230,9 +266,7 @@ let nTurn=1, nHits1=0, nHits2=0, nPhase='setup1', nShips=[3,2,2], cShipIdx=0, is
 function initNavale() { 
     p1Grid.fill(0); p2Grid.fill(0); p1Rev.fill(false); p2Rev.fill(false); 
     nTurn=1; nHits1=0; nHits2=0; nPhase='setup1'; cShipIdx=0; isNavaleOver=false; nWaiting=false;
-    document.getElementById('navale-setup').style.display='flex'; 
-    document.getElementById('navale-overlay').style.display='none'; 
-    drawNavale(); 
+    document.getElementById('navale-setup').style.display='flex'; document.getElementById('navale-overlay').style.display='none'; drawNavale(); 
 }
 document.getElementById('btn-rotate').addEventListener('click', () => { isHoriz=!isHoriz; document.getElementById('btn-rotate').innerText=isHoriz?'Gira Nave ➡️':'Gira Nave ⬇️'; });
 
@@ -245,15 +279,11 @@ function drawNavale() {
         if(nPhase.includes('setup')){ 
             if(grid[i]===1) div.classList.add('ship'); 
             div.addEventListener('click',()=>placeShip(i,grid)); 
-            document.getElementById('navale-status').innerText=`Gioc. ${nPhase==='setup1'?'1':'2'}: Posiziona navi`; 
+            document.getElementById('navale-status').innerText=`${nPhase==='setup1'?playerName1:playerName2}: Posiziona`; 
             document.getElementById('ship-len').innerText=nShips[cShipIdx]||0; 
         } else { 
-            if(rev[i]){ 
-                if(grid[i]===1){div.classList.add('hit'); div.innerText='💥';}else{div.classList.add('miss'); div.innerText='💧';} 
-            } else {
-                div.addEventListener('click',()=>shoot(i,grid,rev)); 
-            }
-            if(!isNavaleOver) document.getElementById('navale-status').innerText=`Attacca Gioc. ${nTurn===1?'2':'1'}!`; 
+            if(rev[i]){ if(grid[i]===1){div.classList.add('hit'); div.innerText='💥';}else{div.classList.add('miss'); div.innerText='💧';} } else { div.addEventListener('click',()=>shoot(i,grid,rev)); }
+            if(!isNavaleOver) document.getElementById('navale-status').innerText=`Attacca ${nTurn===1?playerName2:playerName1}!`; 
         } 
         b.appendChild(div); 
     } 
@@ -267,55 +297,39 @@ function placeShip(idx,grid){
     for(let i=0;i<len;i++) grid[isHoriz?idx+i:idx+(i*6)]=1; 
     cShipIdx++; drawNavale(); 
     if(cShipIdx>=nShips.length){ 
-        nWaiting = true; // Blocca i clic
-        setTimeout(() => {
-            if(nPhase==='setup1'){ 
-                nPhase='setup2'; cShipIdx=0; 
-                document.getElementById('navale-overlay-title').innerText="Passa il telefono!"; 
-                document.getElementById('navale-overlay').style.display='flex'; 
-            } else{ 
-                nPhase='battle'; document.getElementById('navale-setup').style.display='none'; 
-                nTurn=1; 
-                document.getElementById('navale-overlay-title').innerText="Battaglia Iniziata!"; 
-                document.getElementById('navale-overlay').style.display='flex'; 
-            } 
-            nWaiting = false; // Sblocca i clic
-        }, 300); // 300ms di pausa per far vedere l'ultima nave messa
+        nWaiting = true; setTimeout(() => {
+            if(nPhase==='setup1'){ nPhase='setup2'; cShipIdx=0; document.getElementById('navale-overlay-title').innerText="Passa il telefono!"; document.getElementById('navale-overlay').style.display='flex'; } else{ nPhase='battle'; document.getElementById('navale-setup').style.display='none'; nTurn=1; document.getElementById('navale-overlay-title').innerText="Battaglia Iniziata!"; document.getElementById('navale-overlay').style.display='flex'; } nWaiting = false;
+        }, 300); 
     } 
 }
 
 function shoot(idx,grid,rev){ 
-    if(isNavaleOver || rev[idx] || nWaiting) return; // NWAITING Blocca la mitraglietta di click!
-    nWaiting = true; 
-    rev[idx]=true; drawNavale(); 
-    
+    if(isNavaleOver || rev[idx] || nWaiting) return; nWaiting = true; rev[idx]=true; drawNavale(); 
     if(grid[idx]===1){ 
         nTurn===1?nHits1++:nHits2++; 
         if(nHits1===7||nHits2===7){ 
-            isNavaleOver=true; nWaiting=false;
-            document.getElementById('navale-status').innerText=`Fine Partita! Vince G${nTurn}!`; 
-            if(nTurn===1) scores.navale.p1++; else scores.navale.p2++; 
-            saveScores(); return; 
+            isNavaleOver=true; nWaiting=false; let vince=nTurn===1?playerName1:playerName2; document.getElementById('navale-status').innerText=`Vince ${vince}!`; if(nTurn===1) scores.navale.p1++; else scores.navale.p2++; saveScores(); return; 
         } 
     } 
-    setTimeout(()=>{ 
-        nTurn=nTurn===1?2:1; 
-        document.getElementById('navale-overlay-title').innerText="Passa il telefono!"; 
-        document.getElementById('navale-overlay').style.display='flex'; 
-        nWaiting=false; // Sblocca il turno successivo
-    }, 800); 
+    setTimeout(()=>{ nTurn=nTurn===1?2:1; document.getElementById('navale-overlay-title').innerText="Passa il telefono!"; document.getElementById('navale-overlay').style.display='flex'; nWaiting=false; }, 800); 
 }
 
 document.getElementById('btn-navale-ready').addEventListener('click', ()=>{ document.getElementById('navale-overlay').style.display='none'; drawNavale(); }); 
 document.getElementById('reset-navale').addEventListener('click', initNavale); 
+document.getElementById('resign-navale').addEventListener('click', () => {
+    if(isNavaleOver || nPhase.includes('setup')) return;
+    isNavaleOver = true; let vince = nTurn === 1 ? playerName2 : playerName1;
+    document.getElementById('navale-status').innerText = `Ritirato! Vince ${vince}`;
+    if(nTurn === 1) scores.navale.p2++; else scores.navale.p1++; saveScores();
+});
 
 // ==========================================
-// 7. DAMA UFFICIALE (Polpi vs Maghi)
+// 7. DAMA UFFICIALE (Polpi vs Maghi & Pedine Girate)
 // ==========================================
 let dGrid=[], turnD=1, selPos=null, p1Pieces=12, p2Pieces=12, isDamaActive=true, mustJumpPiece=null;
 
 function initDama() { dGrid=Array(64).fill(0); turnD=1; selPos=null; mustJumpPiece=null; p1Pieces=12; p2Pieces=12; isDamaActive=true; document.getElementById('dama-overlay').style.display='none'; for(let r=0;r<8;r++) for(let c=0;c<8;c++) if((r+c)%2!==0){ if(r<3) dGrid[r*8+c]=1; else if(r>4) dGrid[r*8+c]=2; } updateDScore(); drawDama(); }
-function updateDScore() { document.getElementById('dama-cap-p1').innerText=12-p2Pieces; document.getElementById('dama-cap-p2').innerText=12-p1Pieces; document.getElementById('dama-status').style.color = turnD===1?'#00e5ff':'#ff2a6d'; document.getElementById('dama-status').innerText=`Tocca a: ${turnD===1?'🐙 Polpi':'🧙‍♂️ Maghi'}`; }
+function updateDScore() { document.getElementById('dama-cap-p1').innerText=12-p2Pieces; document.getElementById('dama-cap-p2').innerText=12-p1Pieces; document.getElementById('dama-status').style.color = turnD===1?'#00e5ff':'#ff2a6d'; document.getElementById('dama-status').innerText=`Tocca a: ${turnD===1?'🐙 '+playerName1:'🧙‍♂️ '+playerName2}`; }
 
 function isEnemy(p, target) { if(target===0) return false; let c1 = (p===1||p===3)?1:2; let c2 = (target===1||target===3)?1:2; return c1!==c2; }
 function isKing(p) { return p===3||p===4; }
@@ -339,7 +353,13 @@ function drawDama() {
     for(let i=0;i<64;i++){
         let div=document.createElement('div'); let r=Math.floor(i/8), c=i%8; div.className=`dama-cell ${(r+c)%2===0?'white':'black'}`;
         if(selPos===i) div.classList.add('selected'); if(valids.includes(i)) div.classList.add('valid-move'); if(selPos===null && mandSources.includes(i)) div.classList.add('must-jump');
-        if(dGrid[i]!==0){ let p=document.createElement('div'); p.className='piece'; if(isKing(dGrid[i])) p.classList.add('king'); p.innerText=(dGrid[i]===1||dGrid[i]===3)?'🐙':'🧙‍♂️'; div.appendChild(p); }
+        
+        if(dGrid[i]!==0){ 
+            let p=document.createElement('div'); p.className='piece'; 
+            if(dGrid[i]===2 || dGrid[i]===4) p.classList.add('p2'); // MAGHI GIRATI A TESTA IN GIU
+            if(isKing(dGrid[i])) p.classList.add('king'); 
+            p.innerText=(dGrid[i]===1||dGrid[i]===3)?'🐙':'🧙‍♂️'; div.appendChild(p); 
+        }
         div.addEventListener('click',()=>handleDamaClick(i)); b.appendChild(div);
     }
 }
@@ -374,15 +394,22 @@ function handleDamaClick(idx) {
 function endDamaTurn() {
     selPos=null; mustJumpPiece=null; turnD = turnD===1?2:1; updateDScore(); drawDama();
     if(p1Pieces===0||p2Pieces===0) {
-        isDamaActive=false; let vince=p1Pieces===0?"Maghi 🧙‍♂️":"Polpi 🐙"; if(p1Pieces===0) scores.dama.p2++; else scores.dama.p1++; saveScores(); 
-        document.getElementById('dama-overlay-title').innerText=`Fine Partita!\nVince: ${vince}`; document.getElementById('dama-overlay').style.display='flex';
+        isDamaActive=false; let vince=p1Pieces===0?playerName2:playerName1; if(p1Pieces===0) scores.dama.p2++; else scores.dama.p1++; saveScores(); 
+        document.getElementById('dama-overlay-title').innerText=`Vince:\n${vince}`; document.getElementById('dama-overlay').style.display='flex';
     } else {
         let jumps = getAllJumps(turnD, dGrid); let moves = [];
         for(let i=0;i<64;i++) { let p=dGrid[i]; if((turnD===1&&(p===1||p===3)) || (turnD===2&&(p===2||p===4))) moves = moves.concat(getMoves(i, dGrid)); }
         if(jumps.length===0 && moves.length===0) {
-            isDamaActive=false; let vince=turnD===1?"Maghi 🧙‍♂️":"Polpi 🐙"; if(turnD===1) scores.dama.p2++; else scores.dama.p1++; saveScores();
-            document.getElementById('dama-overlay-title').innerText=`Senza Mosse!\nVince: ${vince}`; document.getElementById('dama-overlay').style.display='flex';
+            isDamaActive=false; let vince=turnD===1?playerName2:playerName1; if(turnD===1) scores.dama.p2++; else scores.dama.p1++; saveScores();
+            document.getElementById('dama-overlay-title').innerText=`Senza Mosse!\nVince:\n${vince}`; document.getElementById('dama-overlay').style.display='flex';
         }
     }
 }
-document.getElementById('reset-dama').addEventListener('click', initDama); document.getElementById('retry-dama').addEventListener('click', initDama); initDama();
+document.getElementById('reset-dama').addEventListener('click', initDama); document.getElementById('retry-dama').addEventListener('click', initDama); 
+document.getElementById('resign-dama').addEventListener('click', () => {
+    if(!isDamaActive) return; isDamaActive = false;
+    let vince = turnD === 1 ? playerName2 : playerName1;
+    document.getElementById('dama-status').innerText = `Ritirato! Vince ${vince}`;
+    if(turnD === 1) scores.dama.p2++; else scores.dama.p1++; saveScores();
+});
+initDama();
