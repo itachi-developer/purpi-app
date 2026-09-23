@@ -1,4 +1,4 @@
-/* VARIABILI DI BASE (DARK MODE) */
+/* VARIABILI DI BASE E TEMA GIORNO/NOTTE */
 :root {
     --bg-main: #0B101E; --app-bg: radial-gradient(circle at top right, #1A2542, #0B101E);
     --surface: rgba(255, 255, 255, 0.05); --surface-hover: rgba(255, 255, 255, 0.08);
@@ -16,20 +16,21 @@ body.light-theme {
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
 body { background: var(--bg-main); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; justify-content: center; transition: background 0.5s, color 0.5s; }
-
 .app-container { width: 100%; max-width: 480px; height: 100vh; position: relative; overflow: hidden; background: var(--app-bg); transition: background 0.5s; }
-
 .view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; opacity: 0; pointer-events: none; transition: opacity 0.3s ease, transform 0.3s ease; transform: translateX(20px); overflow-y: auto; }
 .view.active { opacity: 1; pointer-events: all; transform: translateX(0); }
 #home.view { transform: translateX(-20px); } #home.active { transform: translateX(0); }
 
+/* HOME E INPUT */
 .home-header { padding: 50px 20px 30px; text-align: left; }
 .home-header h1 { font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 5px; color: var(--primary); }
 .home-header p { color: var(--text-muted); font-size: 15px; }
+.elegant-input { width: 100%; background: var(--surface); color: var(--text-main); border: 1px solid var(--border); padding: 10px 15px; border-radius: 10px; font-size: 14px; font-family: 'Poppins'; outline: none; transition: 0.2s; }
+.elegant-input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(0,229,255,0.2); }
 
+/* GIOCHI E MENU */
 .games-list { padding: 0 20px 40px; display: flex; flex-direction: column; gap: 12px; }
 .section-title { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; padding-left: 5px; }
-
 .game-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 15px; display: flex; align-items: center; cursor: pointer; transition: 0.2s; text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.05); backdrop-filter: blur(10px); }
 .game-card:active { transform: scale(0.96); background: var(--surface-hover); border-color: var(--primary); }
 .card-icon { width: 50px; height: 50px; border-radius: 14px; display: flex; justify-content: center; align-items: center; font-size: 24px; margin-right: 15px; }
@@ -39,29 +40,30 @@ body { background: var(--bg-main); color: var(--text-main); height: 100vh; overf
 .card-arrow { color: var(--text-muted); font-size: 16px; transition: 0.2s; }
 .game-card:active .card-arrow { color: var(--primary); transform: translateX(5px); }
 
+/* CONTROLLI UI */
 .top-bar { height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--surface); backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 10; }
 .back-btn, .btn-icon { background: none; border: none; color: var(--primary); font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; width: 80px; }
-.btn-icon { justify-content: flex-end; font-size: 20px; }
 .top-bar h2 { font-size: 18px; font-weight: 700; flex: 1; text-align: center; color: var(--text-main); }
-
 .game-content { padding: 20px; display: flex; flex-direction: column; align-items: center; }
-
 .glass-panel { width: 100%; max-width: 340px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
 .elegant-select { width: 100%; background: var(--surface-hover); color: var(--text-main); border: 1px solid var(--border); padding: 12px; border-radius: 10px; font-size: 14px; font-family: 'Poppins'; outline: none; }
 .btn-elegant { width: 100%; background: var(--primary); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); font-weight: 700; font-size: 16px; padding: 14px; border-radius: 12px; border: none; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
 .btn-elegant:active { transform: scale(0.96); }
 .btn-elegant.outline { background: transparent; color: var(--text-main); border: 1px solid var(--border); box-shadow: none; text-shadow: none;}
 
+/* STORICO MULTIPLAYER (Profili) */
+.profile-stat { display: flex; justify-content: space-between; padding: 8px 10px; background: var(--surface-hover); border-radius: 8px; margin-bottom: 8px; font-size: 13px; border: 1px solid var(--border);}
+.profile-stat strong { color: var(--primary); font-size: 14px; }
+
+/* PUNTEGGI E TASTI AZIONE */
 .score-row { width: 100%; max-width: 340px; display: flex; justify-content: space-between; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; margin-bottom: 20px; font-size: 14px; font-weight: 600; color: var(--text-muted); }
 .score-row .highlight { color: var(--text-main); font-size: 18px; margin-left: 5px; }
 .turn-indicator { background: var(--surface-hover); border: 1px solid var(--border); color: var(--primary); padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 15px; margin-bottom: 20px; text-align: center; width: 100%; max-width: 340px; transition: 0.3s; }
-.hint { font-size: 12px; color: var(--text-muted); margin-top: 15px; text-align: center; }
-
-/* Tasti Gestione Partita */
 .game-controls-row { display: flex; gap: 8px; width: 100%; max-width: 340px; margin-top: 15px; margin-bottom: 5px; }
 .btn-action { flex: 1; background: var(--surface); color: var(--text-main); border: 1px solid var(--border); border-radius: 12px; padding: 10px 5px; font-size: 12px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 6px; font-weight: 600;}
 .btn-action i { font-size: 18px; color: var(--primary); }
 .btn-action:active { background: var(--surface-hover); transform: scale(0.95); border-color: var(--primary); }
+#resign-tris i, #resign-navale i, #resign-dama i { color: #ff2a6d; }
 
 .game-over-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); border-radius: 12px; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 50; backdrop-filter: blur(5px); }
 .game-over-overlay h3 { color: #fff; font-size: 26px; margin-bottom: 10px; text-align: center;}
@@ -70,12 +72,13 @@ body { background: var(--bg-main); color: var(--text-main); height: 100vh; overf
 canvas { background: var(--canvas-bg); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 340px;}
 #pongCanvas { background: #1a3621; } 
 
-/* Controller */
+/* CONTROLLER SNAKE */
 .d-pad { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; gap: 10px; margin-top: 5px; width: 200px; height: 200px; }
 .dir-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; color: var(--text-main); font-size: 26px; display: flex; justify-content: center; align-items: center; transition: 0.1s; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
 .dir-btn:active { background: var(--primary); color: #fff; transform: scale(0.9); }
 .up { grid-area: up; } .down { grid-area: down; } .left { grid-area: left; } .right { grid-area: right; }
 
+/* MULTIPLAYER */
 .tris-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 340px; }
 .tris-board .cell { background: var(--surface); aspect-ratio: 1; border-radius: 16px; border: 1px solid var(--border); display: flex; justify-content: center; align-items: center; font-size: 55px; cursor: pointer; transition: 0.2s; color: var(--text-main);}
 .tris-board .cell:active { transform: scale(0.95); background: var(--surface-hover); }
@@ -87,40 +90,7 @@ canvas { background: var(--canvas-bg); border-radius: 12px; border: 1px solid va
 .cell-navale.hit { background: #ff2a6d; animation: pop 0.3s; }
 .cell-navale.miss { background: var(--surface); opacity: 0.2; }
 
-/* === REGOLE DAMA UFFICIALE === */
-.dama-wrapper { border: 2px solid var(--border); border-radius: 12px; overflow: hidden; width: 100%; max-width: 340px; position: relative;}
-.dama-board { display: grid; grid-template-columns: repeat(8, 1fr); background: var(--dama-light); }
-.dama-cell { aspect-ratio: 1; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; }
-.dama-cell.black { background: var(--dama-dark); }
-.dama-cell.selected { border: 3px solid #ffab00; box-shadow: inset 0 0 15px rgba(255, 171, 0, 0.5); }
-.dama-cell.valid-move { box-shadow: inset 0 0 15px rgba(0, 229, 255, 0.7); }
-.dama-cell.must-jump { box-shadow: inset 0 0 25px rgba(255, 42, 109, 0.9); }
-
-.piece { font-size: 24px; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); transition: 0.2s; position: relative; z-index: 2;}
-.piece.king { filter: drop-shadow(0 0 10px gold); transform: scale(1.15); }
-.piece.king::after { content: '👑'; position: absolute; top: -12px; right: -12px; font-size: 14px; filter: none; }
-
-.overlay-pass { position: absolute; top:0; left:0; width:100%; height:100%; background: var(--bg-main); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; border-radius: 16px; border: 1px solid var(--primary); opacity: 0.95; }
-.overlay-pass h3 { margin-bottom: 20px; font-size: 22px; color: var(--text-main); text-align: center;}
-@keyframes pop { 0% { transform: scale(0.6); } 100% { transform: scale(1); } 
-/* --- INPUT NOMI GIOCATORI --- */
-.elegant-input { width: 100%; background: var(--surface); color: var(--text-main); border: 1px solid var(--border); padding: 10px 15px; border-radius: 10px; font-size: 14px; font-family: 'Poppins'; outline: none; transition: 0.2s; }
-.elegant-input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(0,229,255,0.2); }
-
-/* --- TASTI DI GESTIONE GIOCO E RITIRATA --- */
-.game-controls-row { display: flex; gap: 8px; width: 100%; max-width: 340px; margin-top: 15px; margin-bottom: 5px; }
-.btn-action { flex: 1; background: var(--surface); color: var(--text-main); border: 1px solid var(--border); border-radius: 12px; padding: 10px 5px; font-size: 12px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 6px; font-weight: 600;}
-.btn-action i { font-size: 18px; color: var(--primary); }
-.btn-action:active { background: var(--surface-hover); transform: scale(0.95); border-color: var(--primary); }
-#resign-tris i, #resign-navale i, #resign-dama i { color: #ff2a6d; } /* Bandiera rossa per ritiro */
-
-/* --- D-PAD SNAKE (Più vicino allo schermo) --- */
-.d-pad { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; gap: 12px; margin-top: 5px; width: 220px; height: 220px; }
-.dir-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; color: var(--text-main); font-size: 26px; display: flex; justify-content: center; align-items: center; transition: 0.1s; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-.dir-btn:active { background: var(--primary); color: #fff; transform: scale(0.9); }
-.up { grid-area: up; } .down { grid-area: down; } .left { grid-area: left; } .right { grid-area: right; }
-
-/* --- REGOLE DAMA UFFICIALE E PEDINE GIRATE --- */
+/* DAMA - PEDINE POLPI (G1) GIRATE SOTTOSOPRA */
 .dama-wrapper { border: 2px solid var(--border); border-radius: 12px; overflow: hidden; width: 100%; max-width: 340px; position: relative;}
 .dama-board { display: grid; grid-template-columns: repeat(8, 1fr); background: var(--dama-light); }
 .dama-cell { aspect-ratio: 1; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; }
@@ -130,7 +100,11 @@ canvas { background: var(--canvas-bg); border-radius: 12px; border: 1px solid va
 .dama-cell.must-jump { box-shadow: inset 0 0 25px rgba(255, 42, 109, 0.9); }
 
 .piece { font-size: 24px; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); transition: 0.2s; position: relative; z-index: 2; display: flex; justify-content: center; align-items: center;}
-.piece.p2 { transform: rotate(180deg); } /* Gira le pedine del Giocatore 2 (Maghi) a testa in giù! */
+.piece.p1 { transform: rotate(180deg); } /* <--- POLPI A TESTA IN GIÙ */
 .piece.king { filter: drop-shadow(0 0 10px gold); transform: scale(1.15); }
-.piece.p2.king { transform: scale(1.15) rotate(180deg); } 
-.piece.king::after { content: '👑'; position: absolute; top: -12px; right: -12px; font-size: 14px; filter: none; } }
+.piece.p1.king { transform: scale(1.15) rotate(180deg); } 
+.piece.king::after { content: '👑'; position: absolute; top: -12px; right: -12px; font-size: 14px; filter: none; }
+
+.overlay-pass { position: absolute; top:0; left:0; width:100%; height:100%; background: var(--bg-main); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; border-radius: 16px; border: 1px solid var(--primary); opacity: 0.95; }
+.overlay-pass h3 { margin-bottom: 20px; font-size: 22px; color: var(--text-main); text-align: center;}
+@keyframes pop { 0% { transform: scale(0.6); } 100% { transform: scale(1); } }
