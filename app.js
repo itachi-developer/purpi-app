@@ -1,26 +1,13 @@
 // ==========================================
-// 0. NOMI GIOCATORI E TEMA
+// 0. GESTIONE BENVENUTO E TEMA
 // ==========================================
-let playerName1 = localStorage.getItem('octoName1') || 'Giocatore 1';
-let playerName2 = localStorage.getItem('octoName2') || 'Giocatore 2';
-
-const inputP1 = document.getElementById('input-p1');
-const inputP2 = document.getElementById('input-p2');
-inputP1.value = playerName1 !== 'Giocatore 1' ? playerName1 : '';
-inputP2.value = playerName2 !== 'Giocatore 2' ? playerName2 : '';
-
-function updateNames() {
-    playerName1 = inputP1.value.trim() || 'Giocatore 1';
-    playerName2 = inputP2.value.trim() || 'Giocatore 2';
-    localStorage.setItem('octoName1', playerName1);
-    localStorage.setItem('octoName2', playerName2);
-    
-    document.querySelectorAll('.name-p1').forEach(el => el.innerText = playerName1);
-    document.querySelectorAll('.name-p2').forEach(el => el.innerText = playerName2);
+if(!localStorage.getItem('purpiAppSeen')) {
+    document.getElementById('welcome-modal').style.display = 'flex';
 }
-inputP1.addEventListener('input', updateNames);
-inputP2.addEventListener('input', updateNames);
-updateNames(); // Inizializza su tutto il sito
+document.getElementById('btn-welcome-close').addEventListener('click', () => {
+    localStorage.setItem('purpiAppSeen', 'true');
+    document.getElementById('welcome-modal').style.display = 'none';
+});
 
 function applyTheme() {
     const hour = new Date().getHours();
@@ -37,52 +24,102 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // ==========================================
-// 1. SALVATAGGIO CLASSIFICA
+// 1. NOMI, STORICO PROFILI E SALVATAGGI
 // ==========================================
+let playerName1 = localStorage.getItem('octoName1') || 'Giocatore 1';
+let playerName2 = localStorage.getItem('octoName2') || 'Giocatore 2';
+
+const inputP1 = document.getElementById('input-p1'); const inputP2 = document.getElementById('input-p2');
+inputP1.value = playerName1 !== 'Giocatore 1' ? playerName1 : ''; inputP2.value = playerName2 !== 'Giocatore 2' ? playerName2 : '';
+
 let scores = JSON.parse(localStorage.getItem('octoFinalPro')) || { 
-    snake: { easy:0, med:0, hard:0 }, pong: { easy:0, med:0, hard:0 }, tris: { p1:0, p2:0 }, navale:{ p1:0, p2:0 }, dama: { p1:0, p2:0 }
+    snake: { easy:0, med:0, hard:0 }, pong: { easy:0, med:0, hard:0 },
+    profiles: {} // Nuovo oggetto per salvare le vittorie PER NOME!
 };
+
+function addProfileWin(winnerName, gameName) {
+    if(!scores.profiles) scores.profiles = {};
+    if(!scores.profiles[winnerName]) scores.profiles[winnerName] = { tris: 0, navale: 0, dama: 0 };
+    scores.profiles[winnerName][gameName]++;
+    saveScores();
+}
+
+function updateNames() {
+    playerName1 = inputP1.value.trim() || 'Giocatore 1';
+    playerName2 = inputP2.value.trim() || 'Giocatore 2';
+    localStorage.setItem('octoName1', playerName1); localStorage.setItem('octoName2', playerName2);
+    document.querySelectorAll('.name-p1').forEach(el => el.innerText = playerName1);
+    document.querySelectorAll('.name-p2').forEach(el => el.innerText = playerName2);
+}
+inputP1.addEventListener('input', updateNames); inputP2.addEventListener('input', updateNames); updateNames();
+
 function saveScores() { localStorage.setItem('octoFinalPro', JSON.stringify(scores)); updateLeaderboardUI(); }
+
 function updateLeaderboardUI() {
     document.getElementById('lb-snake-easy').innerText = scores.snake.easy; document.getElementById('lb-snake-med').innerText = scores.snake.med; document.getElementById('lb-snake-hard').innerText = scores.snake.hard;
     document.getElementById('lb-pong-easy').innerText = scores.pong.easy; document.getElementById('lb-pong-med').innerText = scores.pong.med; document.getElementById('lb-pong-hard').innerText = scores.pong.hard;
-    document.getElementById('lb-tris-p1').innerText = scores.tris.p1; document.getElementById('lb-tris-p2').innerText = scores.tris.p2;
-    document.getElementById('lb-navale-p1').innerText = scores.navale.p1; document.getElementById('lb-navale-p2').innerText = scores.navale.p2;
-    document.getElementById('lb-dama-p1').innerText = scores.dama.p1; document.getElementById('lb-dama-p2').innerText = scores.dama.p2;
+    
+    // Genera Lista Profili
+    const pContainer = document.getElementById('profiles-container');
+    pContainer.innerHTML = '';
+    if(!scores.profiles || Object.keys(scores.profiles).length === 0) {
+        pContainer.innerHTML = '<p style="font-size:13px; color:gray;">Nessuna partita vinta registrata.</p>';
+    } else {
+        for (const [name, wins] of Object.entries(scores.profiles)) {
+            pContainer.innerHTML += `
+                <div class="profile-stat">
+                    <strong>${name}</strong>
+                    <span>❌ ${wins.tris} | ⚓ ${wins.navale} | 🏁 ${wins.dama}</span>
+                </div>
+            `;
+        }
+    }
 }
 updateLeaderboardUI();
 
 // ==========================================
-// 2. NAVIGAZIONE
+// 2. NAVIGAZIONE (CON TASTO INDIETRO PWA!)
 // ==========================================
 const views = document.querySelectorAll('.view');
 let isSnakeActive = false, isPongActive = false, isSnakePaused = false, isPongPaused = false;
 let snakeAnimReq, pongAnimReq; 
 
+// Inizializza lo stato Home
+history.replaceState({page: 'home'}, '', '#home');
+
+function switchAppView(targetID, pushHistory = true) {
+    if(pushHistory) history.pushState({page: targetID}, '', '#' + targetID);
+    
+    views.forEach(v => v.classList.remove('active'));
+    document.getElementById(targetID).classList.add('active');
+    isSnakeActive = false; isPongActive = false;
+    cancelAnimationFrame(snakeAnimReq); cancelAnimationFrame(pongAnimReq);
+    
+    if(targetID === 'snake') { document.getElementById('snake-score').innerText = '0'; document.getElementById('snake-high').innerText = scores.snake[document.getElementById('snake-diff').value]; document.getElementById('snake-overlay').style.display = 'none'; document.getElementById('snake-menu-panel').style.display = 'flex'; }
+    if(targetID === 'pong') { document.getElementById('pong-score-p1').innerText = '0'; document.getElementById('pong-score-cpu').innerText = '0'; document.getElementById('pong-overlay').style.display = 'none'; document.getElementById('pong-menu-panel').style.display = 'flex'; }
+}
+
+// Clic su Gioco -> Usa la funzione
 document.querySelectorAll('.open-game').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const target = btn.getAttribute('data-target');
-        views.forEach(v => v.classList.remove('active'));
-        document.getElementById(target).classList.add('active');
-        isSnakeActive = false; isPongActive = false;
-        
-        if(target === 'snake') { document.getElementById('snake-score').innerText = '0'; document.getElementById('snake-high').innerText = scores.snake[document.getElementById('snake-diff').value]; document.getElementById('snake-overlay').style.display = 'none'; document.getElementById('snake-menu-panel').style.display = 'flex'; }
-        if(target === 'pong') { document.getElementById('pong-score-p1').innerText = '0'; document.getElementById('pong-score-cpu').innerText = '0'; document.getElementById('pong-overlay').style.display = 'none'; document.getElementById('pong-menu-panel').style.display = 'flex'; }
-    });
+    btn.addEventListener('click', () => switchAppView(btn.getAttribute('data-target'), true));
 });
+
+// Clic su Indietro Header -> Usa il tasto fisico indietro!
 document.querySelectorAll('.back-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        isSnakeActive = false; isPongActive = false;
-        cancelAnimationFrame(snakeAnimReq); cancelAnimationFrame(pongAnimReq);
-        views.forEach(v => v.classList.remove('active')); document.getElementById('home').classList.add('active');
-    });
+    btn.addEventListener('click', () => history.back());
+});
+
+// Ascolta il tasto indietro nativo del Telefono
+window.addEventListener('popstate', (e) => {
+    if(e.state && e.state.page) { switchAppView(e.state.page, false); } 
+    else { switchAppView('home', false); }
 });
 
 // ==========================================
 // 3. POLPO SNAKE (Griglia allargata + Polizia/Sigarette)
 // ==========================================
 const snakeCanvas = document.getElementById('snakeCanvas'); const sCtx = snakeCanvas.getContext('2d');
-const gridSize = 17; const tileCount = 20; // 17*20 = 340px (Campo più largo, griglia fine)
+const gridSize = 17; const tileCount = 20; // 340 / 17 = 20
 let snake = [], dx = 0, dy = 0, foodX, foodY, rocks = [], snakeScore = 0, currentDiffS = 'med', gameSpeed = 120, lastRenderTime = 0;
 
 function initSnake() {
@@ -142,11 +179,9 @@ function snakeLoop(timestamp) {
 
 function drawSnakeMap() {
     sCtx.clearRect(0, 0, snakeCanvas.width, snakeCanvas.height);
-    // Griglia
     sCtx.strokeStyle = 'rgba(255,255,255,0.05)'; sCtx.lineWidth = 1;
     for(let i=0; i<tileCount; i++){ for(let j=0; j<tileCount; j++){ sCtx.strokeRect(i*gridSize, j*gridSize, gridSize, gridSize); } }
     
-    // Disegno perfettamente centrato
     sCtx.textAlign = "center"; sCtx.textBaseline = "middle"; sCtx.font = "14px Arial";
     rocks.forEach(r => sCtx.fillText('👮', r.x * gridSize + gridSize/2, r.y * gridSize + gridSize/2)); 
     sCtx.fillText('🚬', foodX * gridSize + gridSize/2, foodY * gridSize + gridSize/2);
@@ -228,7 +263,7 @@ function drawSoccer() {
 }
 
 // ==========================================
-// 5. TRIS MAGICO E RITIRO
+// 5. TRIS MAGICO (Con Ritiro)
 // ==========================================
 const tCells = document.querySelectorAll('.tris-board .cell'); const tStatus = document.getElementById('tris-status');
 let tBoard = ['', '', '', '', '', '', '', '', '']; let isTrisActive = true; let currentTurn = '🐙';
@@ -241,8 +276,7 @@ tCells.forEach(cell => {
         if (winC.some(c => tBoard[c[0]] && tBoard[c[0]] === tBoard[c[1]] && tBoard[c[0]] === tBoard[c[2]])) {
             let winnerName = currentTurn === '🐙' ? playerName1 : playerName2;
             tStatus.innerText = `Vince ${winnerName} ${currentTurn}!`;
-            if(currentTurn === '🐙') scores.tris.p1++; else scores.tris.p2++;
-            saveScores(); isTrisActive = false; return;
+            addProfileWin(winnerName, 'tris'); isTrisActive = false; return;
         }
         if (!tBoard.includes('')) { tStatus.innerText = 'Pareggio!'; isTrisActive = false; return; }
         currentTurn = currentTurn === '🐙' ? '🧙‍♂️' : '🐙'; tStatus.innerText = `Tocca a: ${currentTurn} ${currentTurn==='🐙'?playerName1:playerName2}`;
@@ -250,15 +284,13 @@ tCells.forEach(cell => {
 });
 document.getElementById('reset-tris').addEventListener('click', () => { tBoard=['','','','','','','','','']; isTrisActive=true; currentTurn='🐙'; tStatus.innerText=`Tocca a: 🐙 ${playerName1}`; tCells.forEach(c=>c.innerText=''); });
 document.getElementById('resign-tris').addEventListener('click', () => {
-    if(!isTrisActive) return;
-    let winner = currentTurn === '🐙' ? playerName2 : playerName1;
+    if(!isTrisActive) return; let winner = currentTurn === '🐙' ? playerName2 : playerName1;
     tStatus.innerText = `Ritirato! Vince ${winner}`;
-    if(currentTurn === '🐙') scores.tris.p2++; else scores.tris.p1++;
-    saveScores(); isTrisActive = false;
+    addProfileWin(winner, 'tris'); isTrisActive = false;
 });
 
 // ==========================================
-// 6. NAVALE E RITIRO
+// 6. NAVALE (Con Ritiro)
 // ==========================================
 let p1Grid=Array(36).fill(0), p2Grid=Array(36).fill(0), p1Rev=Array(36).fill(false), p2Rev=Array(36).fill(false);
 let nTurn=1, nHits1=0, nHits2=0, nPhase='setup1', nShips=[3,2,2], cShipIdx=0, isHoriz=true, isNavaleOver=false, nWaiting=false;
@@ -271,16 +303,12 @@ function initNavale() {
 document.getElementById('btn-rotate').addEventListener('click', () => { isHoriz=!isHoriz; document.getElementById('btn-rotate').innerText=isHoriz?'Gira Nave ➡️':'Gira Nave ⬇️'; });
 
 function drawNavale() { 
-    const b=document.getElementById('board-navale'); b.innerHTML=''; 
-    let grid=nPhase==='setup1'?p1Grid:(nPhase==='setup2'?p2Grid:(nTurn===1?p2Grid:p1Grid)); 
-    let rev=nTurn===1?p2Rev:p1Rev; 
+    const b=document.getElementById('board-navale'); b.innerHTML=''; let grid=nPhase==='setup1'?p1Grid:(nPhase==='setup2'?p2Grid:(nTurn===1?p2Grid:p1Grid)); let rev=nTurn===1?p2Rev:p1Rev; 
     for(let i=0;i<36;i++){ 
         let div=document.createElement('div'); div.className='cell-navale'; 
         if(nPhase.includes('setup')){ 
-            if(grid[i]===1) div.classList.add('ship'); 
-            div.addEventListener('click',()=>placeShip(i,grid)); 
-            document.getElementById('navale-status').innerText=`${nPhase==='setup1'?playerName1:playerName2}: Posiziona`; 
-            document.getElementById('ship-len').innerText=nShips[cShipIdx]||0; 
+            if(grid[i]===1) div.classList.add('ship'); div.addEventListener('click',()=>placeShip(i,grid)); 
+            document.getElementById('navale-status').innerText=`${nPhase==='setup1'?playerName1:playerName2}: Posiziona`; document.getElementById('ship-len').innerText=nShips[cShipIdx]||0; 
         } else { 
             if(rev[i]){ if(grid[i]===1){div.classList.add('hit'); div.innerText='💥';}else{div.classList.add('miss'); div.innerText='💧';} } else { div.addEventListener('click',()=>shoot(i,grid,rev)); }
             if(!isNavaleOver) document.getElementById('navale-status').innerText=`Attacca ${nTurn===1?playerName2:playerName1}!`; 
@@ -288,43 +316,27 @@ function drawNavale() {
         b.appendChild(div); 
     } 
 }
-
 function placeShip(idx,grid){ 
-    if(cShipIdx>=nShips.length || nWaiting) return; 
-    let len=nShips[cShipIdx], r=Math.floor(idx/6), c=idx%6; 
+    if(cShipIdx>=nShips.length || nWaiting) return; let len=nShips[cShipIdx], r=Math.floor(idx/6), c=idx%6; 
     if(isHoriz&&c+len>6) return; if(!isHoriz&&r+len>6) return; 
     for(let i=0;i<len;i++) if(grid[isHoriz?idx+i:idx+(i*6)]!==0) return; 
-    for(let i=0;i<len;i++) grid[isHoriz?idx+i:idx+(i*6)]=1; 
-    cShipIdx++; drawNavale(); 
-    if(cShipIdx>=nShips.length){ 
-        nWaiting = true; setTimeout(() => {
-            if(nPhase==='setup1'){ nPhase='setup2'; cShipIdx=0; document.getElementById('navale-overlay-title').innerText="Passa il telefono!"; document.getElementById('navale-overlay').style.display='flex'; } else{ nPhase='battle'; document.getElementById('navale-setup').style.display='none'; nTurn=1; document.getElementById('navale-overlay-title').innerText="Battaglia Iniziata!"; document.getElementById('navale-overlay').style.display='flex'; } nWaiting = false;
-        }, 300); 
-    } 
+    for(let i=0;i<len;i++) grid[isHoriz?idx+i:idx+(i*6)]=1; cShipIdx++; drawNavale(); 
+    if(cShipIdx>=nShips.length){ nWaiting = true; setTimeout(() => { if(nPhase==='setup1'){ nPhase='setup2'; cShipIdx=0; document.getElementById('navale-overlay-title').innerText="Passa il telefono!"; document.getElementById('navale-overlay').style.display='flex'; } else{ nPhase='battle'; document.getElementById('navale-setup').style.display='none'; nTurn=1; document.getElementById('navale-overlay-title').innerText="Battaglia Iniziata!"; document.getElementById('navale-overlay').style.display='flex'; } nWaiting = false; }, 300); } 
 }
-
 function shoot(idx,grid,rev){ 
     if(isNavaleOver || rev[idx] || nWaiting) return; nWaiting = true; rev[idx]=true; drawNavale(); 
-    if(grid[idx]===1){ 
-        nTurn===1?nHits1++:nHits2++; 
-        if(nHits1===7||nHits2===7){ 
-            isNavaleOver=true; nWaiting=false; let vince=nTurn===1?playerName1:playerName2; document.getElementById('navale-status').innerText=`Vince ${vince}!`; if(nTurn===1) scores.navale.p1++; else scores.navale.p2++; saveScores(); return; 
-        } 
-    } 
+    if(grid[idx]===1){ nTurn===1?nHits1++:nHits2++; if(nHits1===7||nHits2===7){ isNavaleOver=true; nWaiting=false; let vince=nTurn===1?playerName1:playerName2; document.getElementById('navale-status').innerText=`Vince ${vince}!`; addProfileWin(vince, 'navale'); return; } } 
     setTimeout(()=>{ nTurn=nTurn===1?2:1; document.getElementById('navale-overlay-title').innerText="Passa il telefono!"; document.getElementById('navale-overlay').style.display='flex'; nWaiting=false; }, 800); 
 }
-
 document.getElementById('btn-navale-ready').addEventListener('click', ()=>{ document.getElementById('navale-overlay').style.display='none'; drawNavale(); }); 
 document.getElementById('reset-navale').addEventListener('click', initNavale); 
 document.getElementById('resign-navale').addEventListener('click', () => {
-    if(isNavaleOver || nPhase.includes('setup')) return;
-    isNavaleOver = true; let vince = nTurn === 1 ? playerName2 : playerName1;
-    document.getElementById('navale-status').innerText = `Ritirato! Vince ${vince}`;
-    if(nTurn === 1) scores.navale.p2++; else scores.navale.p1++; saveScores();
+    if(isNavaleOver || nPhase.includes('setup')) return; isNavaleOver = true; let vince = nTurn === 1 ? playerName2 : playerName1;
+    document.getElementById('navale-status').innerText = `Ritirato! Vince ${vince}`; addProfileWin(vince, 'navale');
 });
 
 // ==========================================
-// 7. DAMA UFFICIALE (Polpi vs Maghi & Pedine Girate)
+// 7. DAMA UFFICIALE E PEDINE GIRATE
 // ==========================================
 let dGrid=[], turnD=1, selPos=null, p1Pieces=12, p2Pieces=12, isDamaActive=true, mustJumpPiece=null;
 
@@ -333,16 +345,8 @@ function updateDScore() { document.getElementById('dama-cap-p1').innerText=12-p2
 
 function isEnemy(p, target) { if(target===0) return false; let c1 = (p===1||p===3)?1:2; let c2 = (target===1||target===3)?1:2; return c1!==c2; }
 function isKing(p) { return p===3||p===4; }
-function getJumps(idx, grid) {
-    let jumps = []; let p = grid[idx]; if(p===0) return jumps; let r = Math.floor(idx/8), c = idx%8; let dirs = [];
-    if(p===1 || isKing(p)) dirs.push([1,-1], [1,1]); if(p===2 || isKing(p)) dirs.push([-1,-1], [-1,1]); 
-    for(let d of dirs) { let r1 = r+d[0], c1 = c+d[1], r2 = r+d[0]*2, c2 = c+d[1]*2; if(r2>=0 && r2<8 && c2>=0 && c2<8) { let mIdx = r1*8+c1, eIdx = r2*8+c2; let midP = grid[mIdx]; if(isEnemy(p, midP) && grid[eIdx]===0) { if((p===1||p===2) && isKing(midP)) continue; jumps.push({to: eIdx, mid: mIdx}); } } } return jumps;
-}
-function getMoves(idx, grid) {
-    let moves = []; let p = grid[idx]; if(p===0) return moves; let r = Math.floor(idx/8), c = idx%8; let dirs = [];
-    if(p===1 || isKing(p)) dirs.push([1,-1], [1,1]); if(p===2 || isKing(p)) dirs.push([-1,-1], [-1,1]);
-    for(let d of dirs) { let r1 = r+d[0], c1 = c+d[1]; if(r1>=0 && r1<8 && c1>=0 && c1<8) { let eIdx = r1*8+c1; if(grid[eIdx]===0) moves.push({to: eIdx}); } } return moves;
-}
+function getJumps(idx, grid) { let jumps = []; let p = grid[idx]; if(p===0) return jumps; let r = Math.floor(idx/8), c = idx%8; let dirs = []; if(p===1 || isKing(p)) dirs.push([1,-1], [1,1]); if(p===2 || isKing(p)) dirs.push([-1,-1], [-1,1]); for(let d of dirs) { let r1 = r+d[0], c1 = c+d[1], r2 = r+d[0]*2, c2 = c+d[1]*2; if(r2>=0 && r2<8 && c2>=0 && c2<8) { let mIdx = r1*8+c1, eIdx = r2*8+c2; let midP = grid[mIdx]; if(isEnemy(p, midP) && grid[eIdx]===0) { if((p===1||p===2) && isKing(midP)) continue; jumps.push({to: eIdx, mid: mIdx}); } } } return jumps; }
+function getMoves(idx, grid) { let moves = []; let p = grid[idx]; if(p===0) return moves; let r = Math.floor(idx/8), c = idx%8; let dirs = []; if(p===1 || isKing(p)) dirs.push([1,-1], [1,1]); if(p===2 || isKing(p)) dirs.push([-1,-1], [-1,1]); for(let d of dirs) { let r1 = r+d[0], c1 = c+d[1]; if(r1>=0 && r1<8 && c1>=0 && c1<8) { let eIdx = r1*8+c1; if(grid[eIdx]===0) moves.push({to: eIdx}); } } return moves; }
 function getAllJumps(player, grid) { let all = []; for(let i=0; i<64; i++) { let p = grid[i]; if((player===1 && (p===1||p===3)) || (player===2 && (p===2||p===4))) { let j = getJumps(i, grid); if(j.length>0) all.push({from: i, jumps: j}); } } return all; }
 
 function drawDama() {
@@ -356,7 +360,7 @@ function drawDama() {
         
         if(dGrid[i]!==0){ 
             let p=document.createElement('div'); p.className='piece'; 
-            if(dGrid[i]===2 || dGrid[i]===4) p.classList.add('p2'); // MAGHI GIRATI A TESTA IN GIU
+            if(dGrid[i]===1 || dGrid[i]===3) p.classList.add('p1'); // Polpi girati!
             if(isKing(dGrid[i])) p.classList.add('king'); 
             p.innerText=(dGrid[i]===1||dGrid[i]===3)?'🐙':'🧙‍♂️'; div.appendChild(p); 
         }
@@ -373,8 +377,7 @@ function handleDamaClick(idx) {
         if(isOwner) { if(hasJumps && !possibleJumps.some(j=>j.from===idx)) { document.getElementById('dama-status').innerText = "Devi mangiare! 🛑"; return; } selPos=idx; drawDama(); }
     } else {
         if(selPos===idx && mustJumpPiece===null) { selPos=null; updateDScore(); drawDama(); return; }
-        let jList = getJumps(selPos, dGrid); let isJump = jList.find(j=>j.to===idx);
-        let mList = getMoves(selPos, dGrid); let isMove = mList.find(m=>m.to===idx);
+        let jList = getJumps(selPos, dGrid); let isJump = jList.find(j=>j.to===idx); let mList = getMoves(selPos, dGrid); let isMove = mList.find(m=>m.to===idx);
         
         if(isJump) {
             let p = dGrid[selPos]; dGrid[idx] = p; dGrid[selPos] = 0; dGrid[isJump.mid] = 0; turnD===1 ? p2Pieces-- : p1Pieces--;
@@ -394,22 +397,20 @@ function handleDamaClick(idx) {
 function endDamaTurn() {
     selPos=null; mustJumpPiece=null; turnD = turnD===1?2:1; updateDScore(); drawDama();
     if(p1Pieces===0||p2Pieces===0) {
-        isDamaActive=false; let vince=p1Pieces===0?playerName2:playerName1; if(p1Pieces===0) scores.dama.p2++; else scores.dama.p1++; saveScores(); 
+        isDamaActive=false; let vince = p1Pieces===0 ? playerName2 : playerName1; addProfileWin(vince, 'dama');
         document.getElementById('dama-overlay-title').innerText=`Vince:\n${vince}`; document.getElementById('dama-overlay').style.display='flex';
     } else {
         let jumps = getAllJumps(turnD, dGrid); let moves = [];
         for(let i=0;i<64;i++) { let p=dGrid[i]; if((turnD===1&&(p===1||p===3)) || (turnD===2&&(p===2||p===4))) moves = moves.concat(getMoves(i, dGrid)); }
         if(jumps.length===0 && moves.length===0) {
-            isDamaActive=false; let vince=turnD===1?playerName2:playerName1; if(turnD===1) scores.dama.p2++; else scores.dama.p1++; saveScores();
+            isDamaActive=false; let vince = turnD===1 ? playerName2 : playerName1; addProfileWin(vince, 'dama');
             document.getElementById('dama-overlay-title').innerText=`Senza Mosse!\nVince:\n${vince}`; document.getElementById('dama-overlay').style.display='flex';
         }
     }
 }
 document.getElementById('reset-dama').addEventListener('click', initDama); document.getElementById('retry-dama').addEventListener('click', initDama); 
 document.getElementById('resign-dama').addEventListener('click', () => {
-    if(!isDamaActive) return; isDamaActive = false;
-    let vince = turnD === 1 ? playerName2 : playerName1;
-    document.getElementById('dama-status').innerText = `Ritirato! Vince ${vince}`;
-    if(turnD === 1) scores.dama.p2++; else scores.dama.p1++; saveScores();
+    if(!isDamaActive) return; isDamaActive = false; let vince = turnD === 1 ? playerName2 : playerName1;
+    document.getElementById('dama-status').innerText = `Ritirato! Vince ${vince}`; addProfileWin(vince, 'dama');
 });
 initDama();
