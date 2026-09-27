@@ -263,10 +263,15 @@ function drawSoccer() {
 }
 
 // ==========================================
-// 5. TRIS MAGICO (Con Ritiro)
+// 5. TRIS MAGICO (Con Turno Iniziale Random)
 // ==========================================
 const tCells = document.querySelectorAll('.tris-board .cell'); const tStatus = document.getElementById('tris-status');
-let tBoard = ['', '', '', '', '', '', '', '', '']; let isTrisActive = true; let currentTurn = '🐙';
+let tBoard = ['', '', '', '', '', '', '', '', '']; let isTrisActive = true; 
+let currentTurn = Math.random() > 0.5 ? '🐙' : '🧙‍♂️'; // LANCIAMO LA MONETINA!
+
+// Aggiorna subito il testo per mostrare chi è stato sorteggiato
+setTimeout(() => { tStatus.innerText = `Tocca a: ${currentTurn} ${currentTurn==='🐙'?playerName1:playerName2}`; }, 100);
+
 const winC = [ [0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6] ];
 
 tCells.forEach(cell => {
@@ -282,22 +287,31 @@ tCells.forEach(cell => {
         currentTurn = currentTurn === '🐙' ? '🧙‍♂️' : '🐙'; tStatus.innerText = `Tocca a: ${currentTurn} ${currentTurn==='🐙'?playerName1:playerName2}`;
     });
 });
-document.getElementById('reset-tris').addEventListener('click', () => { tBoard=['','','','','','','','','']; isTrisActive=true; currentTurn='🐙'; tStatus.innerText=`Tocca a: 🐙 ${playerName1}`; tCells.forEach(c=>c.innerText=''); });
+
+document.getElementById('reset-tris').addEventListener('click', () => { 
+    tBoard=['','','','','','','','','']; isTrisActive=true; 
+    currentTurn = Math.random() > 0.5 ? '🐙' : '🧙‍♂️'; // NUOVO SORTEGGIO AL RIAVVIO
+    tStatus.innerText=`Tocca a: ${currentTurn} ${currentTurn==='🐙'?playerName1:playerName2}`; 
+    tCells.forEach(c=>c.innerText=''); 
+});
+
 document.getElementById('resign-tris').addEventListener('click', () => {
     if(!isTrisActive) return; let winner = currentTurn === '🐙' ? playerName2 : playerName1;
     tStatus.innerText = `Ritirato! Vince ${winner}`;
     addProfileWin(winner, 'tris'); isTrisActive = false;
 });
 
+
 // ==========================================
-// 6. NAVALE (Con Ritiro)
+// 6. NAVALE (Con Attacco Iniziale Random)
 // ==========================================
 let p1Grid=Array(36).fill(0), p2Grid=Array(36).fill(0), p1Rev=Array(36).fill(false), p2Rev=Array(36).fill(false);
 let nTurn=1, nHits1=0, nHits2=0, nPhase='setup1', nShips=[3,2,2], cShipIdx=0, isHoriz=true, isNavaleOver=false, nWaiting=false;
 
 function initNavale() { 
     p1Grid.fill(0); p2Grid.fill(0); p1Rev.fill(false); p2Rev.fill(false); 
-    nTurn=1; nHits1=0; nHits2=0; nPhase='setup1'; cShipIdx=0; isNavaleOver=false; nWaiting=false;
+    nTurn=1; // N.B: Il posizionamento navi lo inizia sempre G1 per comodità
+    nHits1=0; nHits2=0; nPhase='setup1'; cShipIdx=0; isNavaleOver=false; nWaiting=false;
     document.getElementById('navale-setup').style.display='flex'; document.getElementById('navale-overlay').style.display='none'; drawNavale(); 
 }
 document.getElementById('btn-rotate').addEventListener('click', () => { isHoriz=!isHoriz; document.getElementById('btn-rotate').innerText=isHoriz?'Gira Nave ➡️':'Gira Nave ⬇️'; });
@@ -311,7 +325,7 @@ function drawNavale() {
             document.getElementById('navale-status').innerText=`${nPhase==='setup1'?playerName1:playerName2}: Posiziona`; document.getElementById('ship-len').innerText=nShips[cShipIdx]||0; 
         } else { 
             if(rev[i]){ if(grid[i]===1){div.classList.add('hit'); div.innerText='💥';}else{div.classList.add('miss'); div.innerText='💧';} } else { div.addEventListener('click',()=>shoot(i,grid,rev)); }
-            if(!isNavaleOver) document.getElementById('navale-status').innerText=`Attacca ${nTurn===1?playerName2:playerName1}!`; 
+            if(!isNavaleOver) document.getElementById('navale-status').innerText=`Attacca ${nTurn===1?playerName1:playerName2}!`; 
         } 
         b.appendChild(div); 
     } 
@@ -321,11 +335,28 @@ function placeShip(idx,grid){
     if(isHoriz&&c+len>6) return; if(!isHoriz&&r+len>6) return; 
     for(let i=0;i<len;i++) if(grid[isHoriz?idx+i:idx+(i*6)]!==0) return; 
     for(let i=0;i<len;i++) grid[isHoriz?idx+i:idx+(i*6)]=1; cShipIdx++; drawNavale(); 
-    if(cShipIdx>=nShips.length){ nWaiting = true; setTimeout(() => { if(nPhase==='setup1'){ nPhase='setup2'; cShipIdx=0; document.getElementById('navale-overlay-title').innerText="Passa il telefono!"; document.getElementById('navale-overlay').style.display='flex'; } else{ nPhase='battle'; document.getElementById('navale-setup').style.display='none'; nTurn=1; document.getElementById('navale-overlay-title').innerText="Battaglia Iniziata!"; document.getElementById('navale-overlay').style.display='flex'; } nWaiting = false; }, 300); } 
+    if(cShipIdx>=nShips.length){ 
+        nWaiting = true; setTimeout(() => { 
+            if(nPhase==='setup1'){ 
+                nPhase='setup2'; cShipIdx=0; 
+                document.getElementById('navale-overlay-title').innerText="Passa il telefono!"; 
+                document.getElementById('navale-overlay').style.display='flex'; 
+            } else { 
+                nPhase='battle'; document.getElementById('navale-setup').style.display='none'; 
+                nTurn = Math.random() > 0.5 ? 1 : 2; // SORTEGGIO DI CHI SPARA PER PRIMO!
+                document.getElementById('navale-overlay-title').innerText=`Battaglia Iniziata!\nSpara per primo: ${nTurn===1?playerName1:playerName2}!`; 
+                document.getElementById('navale-overlay').style.display='flex'; 
+            } 
+            nWaiting = false; 
+        }, 300); 
+    } 
 }
 function shoot(idx,grid,rev){ 
     if(isNavaleOver || rev[idx] || nWaiting) return; nWaiting = true; rev[idx]=true; drawNavale(); 
-    if(grid[idx]===1){ nTurn===1?nHits1++:nHits2++; if(nHits1===7||nHits2===7){ isNavaleOver=true; nWaiting=false; let vince=nTurn===1?playerName1:playerName2; document.getElementById('navale-status').innerText=`Vince ${vince}!`; addProfileWin(vince, 'navale'); return; } } 
+    if(grid[idx]===1){ 
+        nTurn===1?nHits1++:nHits2++; 
+        if(nHits1===7||nHits2===7){ isNavaleOver=true; nWaiting=false; let vince=nTurn===1?playerName1:playerName2; document.getElementById('navale-status').innerText=`Vince ${vince}!`; addProfileWin(vince, 'navale'); return; } 
+    } 
     setTimeout(()=>{ nTurn=nTurn===1?2:1; document.getElementById('navale-overlay-title').innerText="Passa il telefono!"; document.getElementById('navale-overlay').style.display='flex'; nWaiting=false; }, 800); 
 }
 document.getElementById('btn-navale-ready').addEventListener('click', ()=>{ document.getElementById('navale-overlay').style.display='none'; drawNavale(); }); 
@@ -335,12 +366,20 @@ document.getElementById('resign-navale').addEventListener('click', () => {
     document.getElementById('navale-status').innerText = `Ritirato! Vince ${vince}`; addProfileWin(vince, 'navale');
 });
 
+
 // ==========================================
-// 7. DAMA UFFICIALE E PEDINE GIRATE
+// 7. DAMA (Con Inizio Random)
 // ==========================================
 let dGrid=[], turnD=1, selPos=null, p1Pieces=12, p2Pieces=12, isDamaActive=true, mustJumpPiece=null;
 
-function initDama() { dGrid=Array(64).fill(0); turnD=1; selPos=null; mustJumpPiece=null; p1Pieces=12; p2Pieces=12; isDamaActive=true; document.getElementById('dama-overlay').style.display='none'; for(let r=0;r<8;r++) for(let c=0;c<8;c++) if((r+c)%2!==0){ if(r<3) dGrid[r*8+c]=1; else if(r>4) dGrid[r*8+c]=2; } updateDScore(); drawDama(); }
+function initDama() { 
+    dGrid=Array(64).fill(0); 
+    turnD = Math.random() > 0.5 ? 1 : 2; // LANCIAMO LA MONETINA!
+    selPos=null; mustJumpPiece=null; p1Pieces=12; p2Pieces=12; isDamaActive=true; 
+    document.getElementById('dama-overlay').style.display='none'; 
+    for(let r=0;r<8;r++) for(let c=0;c<8;c++) if((r+c)%2!==0){ if(r<3) dGrid[r*8+c]=1; else if(r>4) dGrid[r*8+c]=2; } 
+    updateDScore(); drawDama(); 
+}
 function updateDScore() { document.getElementById('dama-cap-p1').innerText=12-p2Pieces; document.getElementById('dama-cap-p2').innerText=12-p1Pieces; document.getElementById('dama-status').style.color = turnD===1?'#00e5ff':'#ff2a6d'; document.getElementById('dama-status').innerText=`Tocca a: ${turnD===1?'🐙 '+playerName1:'🧙‍♂️ '+playerName2}`; }
 
 function isEnemy(p, target) { if(target===0) return false; let c1 = (p===1||p===3)?1:2; let c2 = (target===1||target===3)?1:2; return c1!==c2; }
@@ -360,7 +399,7 @@ function drawDama() {
         
         if(dGrid[i]!==0){ 
             let p=document.createElement('div'); p.className='piece'; 
-            if(dGrid[i]===1 || dGrid[i]===3) p.classList.add('p1'); // Polpi girati!
+            if(dGrid[i]===1 || dGrid[i]===3) p.classList.add('p1'); 
             if(isKing(dGrid[i])) p.classList.add('king'); 
             p.innerText=(dGrid[i]===1||dGrid[i]===3)?'🐙':'🧙‍♂️'; div.appendChild(p); 
         }
