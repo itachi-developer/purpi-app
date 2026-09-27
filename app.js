@@ -365,7 +365,7 @@ document.getElementById('resign-navale').addEventListener('click', () => {
     if(isNavaleOver || nPhase.includes('setup')) return; isNavaleOver = true; let vince = nTurn === 1 ? playerName2 : playerName1;
     document.getElementById('navale-status').innerText = `Ritirato! Vince ${vince}`; addProfileWin(vince, 'navale');
 });
-
+initNavale();
 
 // ==========================================
 // 7. DAMA (Con Inizio Random)
