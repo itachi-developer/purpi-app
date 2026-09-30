@@ -197,11 +197,11 @@ function sDir(ndx, ndy) { if(dx!==0 && ndx!==0) return; if(dy!==0 && ndy!==0) re
 });
 
 // ==========================================
-// 4. CALCIO PONG (Bonus e Difficoltà Bilanciate)
+// 4. CALCIO PONG (Tiri Angolati, Smash e Bonus Pro)
 // ==========================================
 const pCanvas = document.getElementById('pongCanvas'); const pCtx = pCanvas.getContext('2d');
 const ph = 15, netW = 120;
-let pwP1 = 80, pwCPU = 80; // Larghezze dinamiche per il Bonus 📏
+let pwP1 = 80, pwCPU = 80; // Larghezze dinamiche per il Bonus Allungamento 📏
 const ball = { x: 170, y: 220, r: 10, dx: 0, dy: 0, speed: 5 };
 const giocatore = { x: 130, y: 410, score: 0 }; const cpu = { x: 130, y: 15, score: 0 };
 
@@ -214,7 +214,7 @@ let powerup = null; // Oggetto sul campo {x, y, type}
 let powerupSpawnTimer = 0;
 let bonusActiveTimer = 0;
 let currentBonusType = null;
-let superShotP1 = false, superShotCPU = false; // Bonus ⚡
+let superShotP1 = false, superShotCPU = false; 
 
 function initPong() {
     cancelAnimationFrame(pongAnimReq); document.getElementById('pong-menu-panel').style.display = 'none';
@@ -265,30 +265,29 @@ function pongLoop() { if(!isPongActive) return; updateSoccer(); drawSoccer(); po
 function updateSoccer() {
     if(isPongPaused) return; 
     
-    // Intelligenza Artificiale Bilanciata
+    // Intelligenza Artificiale
     let cpuSpd = pongDiff==='easy'? 0.04 : (pongDiff==='med'? 0.09 : 0.16);
     let maxCpuMove = pongDiff==='easy'? 3 : (pongDiff==='med'? 5 : 8.5);
     
     let cpuTarget = ball.x - (cpu.x + pwCPU/2);
     let move = cpuTarget * cpuSpd;
-    move = Math.max(-maxCpuMove, Math.min(maxCpuMove, move)); // Limita la velocità massima della CPU
-    cpu.x += move; 
+    cpu.x += Math.max(-maxCpuMove, Math.min(maxCpuMove, move)); 
     cpu.x = Math.max(0, Math.min(cpu.x, pCanvas.width-pwCPU));
     
     if (ball.dx === 0 && ball.dy === 0) return;
 
-    // SPAWN BONUS (Circa ogni 10 secondi a 60fps)
+    // SPAWN BONUS (Leggermente nella tua metà campo, così la CPU non lo ruba!)
     powerupSpawnTimer++;
     if(!powerup && currentBonusType === null && powerupSpawnTimer > 600) {
         powerup = {
-            x: 40 + Math.random() * (pCanvas.width - 80),
-            y: pCanvas.height/2 + (Math.random()*120 - 60),
+            x: 60 + Math.random() * (pCanvas.width - 120),
+            y: pCanvas.height/2 + (Math.random()*60), // Metà campo bassa
             type: Math.random() > 0.5 ? 'size' : 'speed'
         };
         powerupSpawnTimer = 0;
     }
 
-    // TIMER BONUS ATTIVO
+    // TIMER BONUS ATTIVO (Dura circa 7 secondi)
     if(currentBonusType !== null) {
         bonusActiveTimer--;
         if(bonusActiveTimer <= 0) {
@@ -299,19 +298,19 @@ function updateSoccer() {
 
     ball.x += ball.dx; ball.y += ball.dy;
     
-    // Rimbalzo bordi
+    // Rimbalzo bordi laterali
     if(ball.x - ball.r < 0) { ball.x = ball.r; ball.dx = -ball.dx; } else if(ball.x + ball.r > pCanvas.width) { ball.x = pCanvas.width - ball.r; ball.dx = -ball.dx; }
 
-    // Raccogli Powerup se colpito dalla palla
+    // Raccogli Powerup (Hitbox larga per prenderlo più facilmente)
     if(powerup && lastHitter) {
         let dist = Math.hypot(ball.x - powerup.x, ball.y - powerup.y);
-        if(dist < ball.r + 18) { // 18 raggio collisione bonus
+        if(dist < ball.r + 25) { 
             currentBonusType = powerup.type;
-            bonusActiveTimer = 60 * 7; // Dura 7 Secondi
+            bonusActiveTimer = 60 * 7; 
             if(currentBonusType === 'size') {
-                if(lastHitter === 'p1') pwP1 = 130; else pwCPU = 130;
+                if(lastHitter === 'p1') pwP1 = 160; else pwCPU = 160; // Racchetta Gigante!
             } else if (currentBonusType === 'speed') {
-                if(lastHitter === 'p1') superShotP1 = true; else superShotCPU = true;
+                if(lastHitter === 'p1') superShotP1 = true; else superShotCPU = true; // Modalità cecchino
             }
             powerup = null;
         }
@@ -327,20 +326,46 @@ function updateSoccer() {
         else ball.dy = -ball.dy; 
     }
     
-    // Rimbalzo Racchette (Con calcolo Super-Tiro)
+    // ==========================================
+    // FISICA RIMBALZO E "TIRI A EFFETTO/ANGOLATI"
+    // ==========================================
     if(ball.dy>0 && ball.y+ball.r > giocatore.y && ball.x+ball.r > giocatore.x && ball.x-ball.r < giocatore.x+pwP1) { 
         ball.y = giocatore.y - ball.r; 
         lastHitter = 'p1';
+        
+        // Calcola dove è stata colpita la racchetta (Da -1 a sinistra, a +1 a destra)
         let hitFactor = ((ball.x-(giocatore.x+pwP1/2))/(pwP1/2));
-        ball.dx = hitFactor * (superShotP1 ? 7.5 : 4.5); // Angolo più estremo se Super
-        ball.dy = -(ball.speed + (superShotP1 ? 3 : 0)); // Velocità extra se Super
+        
+        // Se la prendi di striscio (sugli estremi) o hai il bonus ⚡, si attiva lo Smash
+        let isSuper = superShotP1 || Math.abs(hitFactor) > 0.8;
+        ball.dy = -(ball.speed + (isSuper ? 4.5 : 0)); // Super velocità
+        
+        if (isSuper) {
+            // Calcolo matematico per mirare esattamente all'angolino della porta!
+            let tempoDiVolo = giocatore.y / Math.abs(ball.dy);
+            let targetX = hitFactor < 0 ? (pCanvas.width/2 - netW/2 + 10) : (pCanvas.width/2 + netW/2 - 10);
+            ball.dx = (targetX - ball.x) / tempoDiVolo;
+        } else {
+            ball.dx = hitFactor * 4; // Rimbalzo normale
+        }
     }
+    
+    // CPU Rimbalzo
     if(ball.dy<0 && ball.y-ball.r < cpu.y+ph && ball.x+ball.r > cpu.x && ball.x-ball.r < cpu.x+pwCPU) { 
         ball.y = cpu.y + ph + ball.r; 
         lastHitter = 'cpu';
         let hitFactor = ((ball.x-(cpu.x+pwCPU/2))/(pwCPU/2));
-        ball.dx = hitFactor * (superShotCPU ? 7.5 : 4.5);
-        ball.dy = (ball.speed + (superShotCPU ? 3 : 0)); 
+        
+        let isSuperCPU = superShotCPU; // La CPU fa tiri super solo se ruba il bonus
+        ball.dy = (ball.speed + (isSuperCPU ? 4.5 : 0)); 
+        
+        if (isSuperCPU) {
+            let tempoDiVolo = (pCanvas.height - cpu.y) / Math.abs(ball.dy);
+            let targetX = hitFactor < 0 ? (pCanvas.width/2 - netW/2 + 10) : (pCanvas.width/2 + netW/2 - 10);
+            ball.dx = (targetX - ball.x) / tempoDiVolo;
+        } else {
+            ball.dx = hitFactor * 4; 
+        }
     }
 }
 
@@ -352,26 +377,30 @@ function drawSoccer() {
     pCtx.beginPath(); for(let i=0; i<=netW; i+=15) { pCtx.moveTo(pCanvas.width/2-netW/2+i, 0); pCtx.lineTo(pCanvas.width/2-netW/2+i, 40); pCtx.moveTo(pCanvas.width/2-netW/2+i, pCanvas.height-40); pCtx.lineTo(pCanvas.width/2-netW/2+i, pCanvas.height); } for(let j=0; j<=40; j+=15) { pCtx.moveTo(pCanvas.width/2-netW/2, j); pCtx.lineTo(pCanvas.width/2+netW/2, j); pCtx.moveTo(pCanvas.width/2-netW/2, pCanvas.height-j); pCtx.lineTo(pCanvas.width/2+netW/2, pCanvas.height-j); } pCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)'; pCtx.lineWidth = 1; pCtx.stroke();
     pCtx.strokeStyle = 'rgba(255,255,255,0.4)'; pCtx.lineWidth = 2; pCtx.beginPath(); pCtx.moveTo(0, pCanvas.height/2); pCtx.lineTo(pCanvas.width, pCanvas.height/2); pCtx.stroke(); pCtx.beginPath(); pCtx.arc(pCanvas.width/2, pCanvas.height/2, 30, 0, Math.PI*2); pCtx.stroke(); pCtx.strokeRect(pCanvas.width/2-netW/2, 0, netW, 40); pCtx.strokeRect(pCanvas.width/2-netW/2, pCanvas.height-40, netW, 40);
     
-    // Disegna Bonus sul campo
+    // Animazione Fluttuante e Luminosa del Bonus
     if(powerup) {
-        pCtx.textAlign = "center"; pCtx.textBaseline = "middle"; pCtx.font = "24px Arial";
-        pCtx.fillText(powerup.type === 'size' ? '📏' : '⚡', powerup.x, powerup.y);
+        let bounce = Math.sin(Date.now() / 200) * 5; // Fluttua su e giù
+        pCtx.shadowBlur = 15; 
+        pCtx.shadowColor = powerup.type === 'size' ? '#00e5ff' : '#ffab00';
+        pCtx.textAlign = "center"; pCtx.textBaseline = "middle"; pCtx.font = "32px Arial"; // Più grande e visibile
+        pCtx.fillText(powerup.type === 'size' ? '📏' : '⚡', powerup.x, powerup.y + bounce);
+        pCtx.shadowBlur = 0; // reset
     }
 
-    // Giocatore (Bianconero) con luce se Super
+    // Giocatore (Bianconero) - Si illumina se ha il bonus Velocità ⚡
     let halfW1 = pwP1 / 2;
-    pCtx.shadowBlur = superShotP1 ? 15 : 0; pCtx.shadowColor = '#00e5ff';
+    if(superShotP1) { pCtx.shadowBlur = 20; pCtx.shadowColor = '#00e5ff'; }
     pCtx.fillStyle = '#ffffff'; pCtx.fillRect(giocatore.x, giocatore.y, halfW1, ph); pCtx.fillStyle = '#111111'; pCtx.fillRect(giocatore.x+halfW1, giocatore.y, halfW1, ph);
-    pCtx.shadowBlur = 0; // reset
+    pCtx.shadowBlur = 0; 
 
-    // CPU (Rossoblu) con luce se Super
+    // CPU (Rossoblu)
     let halfW2 = pwCPU / 2;
-    pCtx.shadowBlur = superShotCPU ? 15 : 0; pCtx.shadowColor = '#ff2a6d';
+    if(superShotCPU) { pCtx.shadowBlur = 20; pCtx.shadowColor = '#ff2a6d'; }
     pCtx.fillStyle = '#b30000'; pCtx.fillRect(cpu.x, cpu.y, halfW2, ph); pCtx.fillStyle = '#000066'; pCtx.fillRect(cpu.x+halfW2, cpu.y, halfW2, ph);
-    pCtx.shadowBlur = 0; // reset
+    pCtx.shadowBlur = 0; 
 
-    // Disegna Palla (Scia neon se è in Super Shot)
-    if((superShotP1 && ball.dy < 0) || (superShotCPU && ball.dy > 0)) {
+    // Disegna Palla (Scia neon se è in un Super Tiro)
+    if((superShotP1 && ball.dy < 0) || (superShotCPU && ball.dy > 0) || Math.abs(ball.dy) > ball.speed + 3) {
         pCtx.shadowBlur = 12; pCtx.shadowColor = ball.dy < 0 ? '#00e5ff' : '#ff2a6d';
     }
     pCtx.textAlign = "center"; pCtx.textBaseline = "middle"; pCtx.font = "18px Arial"; pCtx.fillText('⚽', ball.x, ball.y);
