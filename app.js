@@ -197,18 +197,38 @@ function sDir(ndx, ndy) { if(dx!==0 && ndx!==0) return; if(dy!==0 && ndy!==0) re
 });
 
 // ==========================================
-// 4. CALCIO PONG
+// 4. CALCIO PONG (Bonus e Difficoltà Bilanciate)
 // ==========================================
 const pCanvas = document.getElementById('pongCanvas'); const pCtx = pCanvas.getContext('2d');
-const pw = 80, ph = 15, netW = 120;
+const ph = 15, netW = 120;
+let pwP1 = 80, pwCPU = 80; // Larghezze dinamiche per il Bonus 📏
 const ball = { x: 170, y: 220, r: 10, dx: 0, dy: 0, speed: 5 };
 const giocatore = { x: 130, y: 410, score: 0 }; const cpu = { x: 130, y: 15, score: 0 };
+
 let pongDiff = 'med'; 
+let baseBallSpeed = 5;
+let lastHitter = null; 
+
+// Sistema Bonus
+let powerup = null; // Oggetto sul campo {x, y, type}
+let powerupSpawnTimer = 0;
+let bonusActiveTimer = 0;
+let currentBonusType = null;
+let superShotP1 = false, superShotCPU = false; // Bonus ⚡
 
 function initPong() {
     cancelAnimationFrame(pongAnimReq); document.getElementById('pong-menu-panel').style.display = 'none';
     pongDiff = document.getElementById('pong-diff').value; giocatore.score = 0; cpu.score = 0; 
     document.getElementById('pong-score-p1').innerText = 0; document.getElementById('pong-score-cpu').innerText = 0;
+    
+    // Bilanciamento Velocità Base palla
+    baseBallSpeed = pongDiff === 'easy' ? 4 : (pongDiff === 'med' ? 5.5 : 7.5);
+    ball.speed = baseBallSpeed;
+    
+    // Reset Bonus
+    pwP1 = 80; pwCPU = 80; powerup = null; currentBonusType = null; powerupSpawnTimer = 0; bonusActiveTimer = 0;
+    superShotP1 = false; superShotCPU = false; lastHitter = null;
+
     isPongActive = true; isPongPaused = false;
     document.getElementById('pause-pong').innerHTML = '<i class="fa-solid fa-pause"></i> Pausa'; document.getElementById('pong-overlay').style.display = 'none';
     resetSoccerBall(); pongAnimReq = window.requestAnimationFrame(pongLoop);
@@ -229,37 +249,133 @@ document.getElementById('end-pong').addEventListener('click', () => {
     document.getElementById('resume-pong').style.display = 'none'; document.getElementById('pong-overlay').style.display = 'flex';
 });
 
-function resetSoccerBall() { ball.x=pCanvas.width/2; ball.y=pCanvas.height/2; ball.dx=0; ball.dy=0; setTimeout(() => { if(!isPongActive||isPongPaused) return; ball.dy=Math.random()>0.5?ball.speed:-ball.speed; ball.dx=(Math.random()*4)-2; }, 800); }
-pCanvas.addEventListener('touchmove', e => { e.preventDefault(); if(!isPongActive||isPongPaused) return; let touchX = e.touches[0].clientX - pCanvas.getBoundingClientRect().left; giocatore.x = Math.max(0, Math.min(touchX - pw/2, pCanvas.width - pw)); }, {passive: false});
+function resetSoccerBall() { 
+    ball.x=pCanvas.width/2; ball.y=pCanvas.height/2; ball.dx=0; ball.dy=0; lastHitter = null;
+    setTimeout(() => { if(!isPongActive||isPongPaused) return; ball.dy=Math.random()>0.5?ball.speed:-ball.speed; ball.dx=(Math.random()*4)-2; }, 800); 
+}
+
+pCanvas.addEventListener('touchmove', e => { 
+    e.preventDefault(); if(!isPongActive||isPongPaused) return; 
+    let touchX = e.touches[0].clientX - pCanvas.getBoundingClientRect().left; 
+    giocatore.x = Math.max(0, Math.min(touchX - pwP1/2, pCanvas.width - pwP1)); 
+}, {passive: false});
 
 function pongLoop() { if(!isPongActive) return; updateSoccer(); drawSoccer(); pongAnimReq = window.requestAnimationFrame(pongLoop); }
 
 function updateSoccer() {
     if(isPongPaused) return; 
-    let cpuSpd = pongDiff==='easy'?0.05 : (pongDiff==='med'?0.1:0.18);
-    cpu.x += (ball.x - (cpu.x + pw/2)) * cpuSpd; cpu.x = Math.max(0, Math.min(cpu.x, pCanvas.width-pw));
+    
+    // Intelligenza Artificiale Bilanciata
+    let cpuSpd = pongDiff==='easy'? 0.04 : (pongDiff==='med'? 0.09 : 0.16);
+    let maxCpuMove = pongDiff==='easy'? 3 : (pongDiff==='med'? 5 : 8.5);
+    
+    let cpuTarget = ball.x - (cpu.x + pwCPU/2);
+    let move = cpuTarget * cpuSpd;
+    move = Math.max(-maxCpuMove, Math.min(maxCpuMove, move)); // Limita la velocità massima della CPU
+    cpu.x += move; 
+    cpu.x = Math.max(0, Math.min(cpu.x, pCanvas.width-pwCPU));
     
     if (ball.dx === 0 && ball.dy === 0) return;
+
+    // SPAWN BONUS (Circa ogni 10 secondi a 60fps)
+    powerupSpawnTimer++;
+    if(!powerup && currentBonusType === null && powerupSpawnTimer > 600) {
+        powerup = {
+            x: 40 + Math.random() * (pCanvas.width - 80),
+            y: pCanvas.height/2 + (Math.random()*120 - 60),
+            type: Math.random() > 0.5 ? 'size' : 'speed'
+        };
+        powerupSpawnTimer = 0;
+    }
+
+    // TIMER BONUS ATTIVO
+    if(currentBonusType !== null) {
+        bonusActiveTimer--;
+        if(bonusActiveTimer <= 0) {
+            pwP1 = 80; pwCPU = 80; superShotP1 = false; superShotCPU = false;
+            currentBonusType = null; powerupSpawnTimer = 0;
+        }
+    }
+
     ball.x += ball.dx; ball.y += ball.dy;
     
+    // Rimbalzo bordi
     if(ball.x - ball.r < 0) { ball.x = ball.r; ball.dx = -ball.dx; } else if(ball.x + ball.r > pCanvas.width) { ball.x = pCanvas.width - ball.r; ball.dx = -ball.dx; }
 
-    if(ball.y-ball.r < 0) { if(ball.x > pCanvas.width/2-netW/2 && ball.x < pCanvas.width/2+netW/2) { giocatore.score++; document.getElementById('pong-score-p1').innerText=giocatore.score; resetSoccerBall(); } else ball.dy = -ball.dy; } 
-    else if (ball.y+ball.r > pCanvas.height) { if(ball.x > pCanvas.width/2-netW/2 && ball.x < pCanvas.width/2+netW/2) { cpu.score++; document.getElementById('pong-score-cpu').innerText=cpu.score; resetSoccerBall(); } else ball.dy = -ball.dy; }
+    // Raccogli Powerup se colpito dalla palla
+    if(powerup && lastHitter) {
+        let dist = Math.hypot(ball.x - powerup.x, ball.y - powerup.y);
+        if(dist < ball.r + 18) { // 18 raggio collisione bonus
+            currentBonusType = powerup.type;
+            bonusActiveTimer = 60 * 7; // Dura 7 Secondi
+            if(currentBonusType === 'size') {
+                if(lastHitter === 'p1') pwP1 = 130; else pwCPU = 130;
+            } else if (currentBonusType === 'speed') {
+                if(lastHitter === 'p1') superShotP1 = true; else superShotCPU = true;
+            }
+            powerup = null;
+        }
+    }
+
+    // Gol Giocatore o CPU
+    if(ball.y-ball.r < 0) { 
+        if(ball.x > pCanvas.width/2-netW/2 && ball.x < pCanvas.width/2+netW/2) { giocatore.score++; document.getElementById('pong-score-p1').innerText=giocatore.score; resetSoccerBall(); } 
+        else ball.dy = -ball.dy; 
+    } 
+    else if (ball.y+ball.r > pCanvas.height) { 
+        if(ball.x > pCanvas.width/2-netW/2 && ball.x < pCanvas.width/2+netW/2) { cpu.score++; document.getElementById('pong-score-cpu').innerText=cpu.score; resetSoccerBall(); } 
+        else ball.dy = -ball.dy; 
+    }
     
-    if(ball.dy>0 && ball.y+ball.r > giocatore.y && ball.x+ball.r > giocatore.x && ball.x-ball.r < giocatore.x+pw) { ball.y = giocatore.y - ball.r; ball.dy = -ball.speed; ball.dx = ((ball.x-(giocatore.x+pw/2))/(pw/2))*4; }
-    if(ball.dy<0 && ball.y-ball.r < cpu.y+ph && ball.x+ball.r > cpu.x && ball.x-ball.r < cpu.x+pw) { ball.y = cpu.y + ph + ball.r; ball.dy = ball.speed; ball.dx = ((ball.x-(cpu.x+pw/2))/(pw/2))*4; }
+    // Rimbalzo Racchette (Con calcolo Super-Tiro)
+    if(ball.dy>0 && ball.y+ball.r > giocatore.y && ball.x+ball.r > giocatore.x && ball.x-ball.r < giocatore.x+pwP1) { 
+        ball.y = giocatore.y - ball.r; 
+        lastHitter = 'p1';
+        let hitFactor = ((ball.x-(giocatore.x+pwP1/2))/(pwP1/2));
+        ball.dx = hitFactor * (superShotP1 ? 7.5 : 4.5); // Angolo più estremo se Super
+        ball.dy = -(ball.speed + (superShotP1 ? 3 : 0)); // Velocità extra se Super
+    }
+    if(ball.dy<0 && ball.y-ball.r < cpu.y+ph && ball.x+ball.r > cpu.x && ball.x-ball.r < cpu.x+pwCPU) { 
+        ball.y = cpu.y + ph + ball.r; 
+        lastHitter = 'cpu';
+        let hitFactor = ((ball.x-(cpu.x+pwCPU/2))/(pwCPU/2));
+        ball.dx = hitFactor * (superShotCPU ? 7.5 : 4.5);
+        ball.dy = (ball.speed + (superShotCPU ? 3 : 0)); 
+    }
 }
 
 function drawSoccer() {
     pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
+    
+    // Disegno Campo e Rete
     pCtx.fillStyle = 'rgba(255, 255, 255, 0.15)'; pCtx.fillRect(pCanvas.width/2-netW/2, 0, netW, 40); pCtx.fillRect(pCanvas.width/2-netW/2, pCanvas.height-40, netW, 40);
     pCtx.beginPath(); for(let i=0; i<=netW; i+=15) { pCtx.moveTo(pCanvas.width/2-netW/2+i, 0); pCtx.lineTo(pCanvas.width/2-netW/2+i, 40); pCtx.moveTo(pCanvas.width/2-netW/2+i, pCanvas.height-40); pCtx.lineTo(pCanvas.width/2-netW/2+i, pCanvas.height); } for(let j=0; j<=40; j+=15) { pCtx.moveTo(pCanvas.width/2-netW/2, j); pCtx.lineTo(pCanvas.width/2+netW/2, j); pCtx.moveTo(pCanvas.width/2-netW/2, pCanvas.height-j); pCtx.lineTo(pCanvas.width/2+netW/2, pCanvas.height-j); } pCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)'; pCtx.lineWidth = 1; pCtx.stroke();
     pCtx.strokeStyle = 'rgba(255,255,255,0.4)'; pCtx.lineWidth = 2; pCtx.beginPath(); pCtx.moveTo(0, pCanvas.height/2); pCtx.lineTo(pCanvas.width, pCanvas.height/2); pCtx.stroke(); pCtx.beginPath(); pCtx.arc(pCanvas.width/2, pCanvas.height/2, 30, 0, Math.PI*2); pCtx.stroke(); pCtx.strokeRect(pCanvas.width/2-netW/2, 0, netW, 40); pCtx.strokeRect(pCanvas.width/2-netW/2, pCanvas.height-40, netW, 40);
-    let halfW = pw / 2;
-    pCtx.fillStyle = '#ffffff'; pCtx.fillRect(giocatore.x, giocatore.y, halfW, ph); pCtx.fillStyle = '#111111'; pCtx.fillRect(giocatore.x+halfW, giocatore.y, halfW, ph);
-    pCtx.fillStyle = '#b30000'; pCtx.fillRect(cpu.x, cpu.y, halfW, ph); pCtx.fillStyle = '#000066'; pCtx.fillRect(cpu.x+halfW, cpu.y, halfW, ph);
+    
+    // Disegna Bonus sul campo
+    if(powerup) {
+        pCtx.textAlign = "center"; pCtx.textBaseline = "middle"; pCtx.font = "24px Arial";
+        pCtx.fillText(powerup.type === 'size' ? '📏' : '⚡', powerup.x, powerup.y);
+    }
+
+    // Giocatore (Bianconero) con luce se Super
+    let halfW1 = pwP1 / 2;
+    pCtx.shadowBlur = superShotP1 ? 15 : 0; pCtx.shadowColor = '#00e5ff';
+    pCtx.fillStyle = '#ffffff'; pCtx.fillRect(giocatore.x, giocatore.y, halfW1, ph); pCtx.fillStyle = '#111111'; pCtx.fillRect(giocatore.x+halfW1, giocatore.y, halfW1, ph);
+    pCtx.shadowBlur = 0; // reset
+
+    // CPU (Rossoblu) con luce se Super
+    let halfW2 = pwCPU / 2;
+    pCtx.shadowBlur = superShotCPU ? 15 : 0; pCtx.shadowColor = '#ff2a6d';
+    pCtx.fillStyle = '#b30000'; pCtx.fillRect(cpu.x, cpu.y, halfW2, ph); pCtx.fillStyle = '#000066'; pCtx.fillRect(cpu.x+halfW2, cpu.y, halfW2, ph);
+    pCtx.shadowBlur = 0; // reset
+
+    // Disegna Palla (Scia neon se è in Super Shot)
+    if((superShotP1 && ball.dy < 0) || (superShotCPU && ball.dy > 0)) {
+        pCtx.shadowBlur = 12; pCtx.shadowColor = ball.dy < 0 ? '#00e5ff' : '#ff2a6d';
+    }
     pCtx.textAlign = "center"; pCtx.textBaseline = "middle"; pCtx.font = "18px Arial"; pCtx.fillText('⚽', ball.x, ball.y);
+    pCtx.shadowBlur = 0;
 }
 
 // ==========================================
